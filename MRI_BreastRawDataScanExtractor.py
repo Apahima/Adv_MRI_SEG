@@ -5,7 +5,7 @@ from pydicom.data import get_testdata_file
 import numpy as np
 
 
-def MRI_RawDataExtractor(ScanDataPath):
+def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan):
 
     if not os.path.exists(os.path.join('Segmentation',ScanDataPath)):
         os.makedirs(os.path.join('Segmentation',ScanDataPath))
@@ -42,7 +42,7 @@ def MRI_RawDataExtractor(ScanDataPath):
         ds = dicom.read_file(filenameDCM)
         # store the raw image data
         ArrayDicom[lstFilesDCM.index(filenameDCM),:, :] = ds.pixel_array
-        pyplot.imsave(os.path.join('Segmentation', ScanDataPath,"ScanImage-{}.png".format(lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM),:, :]), cmap='gray')
+        pyplot.imsave(os.path.join('Segmentation', ScanDataPath,"ScanImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM),:, :]), cmap='gray')
 
 
     # #Original Scan figure

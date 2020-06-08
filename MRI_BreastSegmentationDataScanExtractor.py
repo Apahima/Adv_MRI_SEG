@@ -5,7 +5,7 @@ from pydicom.data import get_testdata_file
 import numpy as np
 import cv2
 
-def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath):
+def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath, PatientID, PatientDateScan):
 
     if not os.path.exists(os.path.join('Segmentation',SegmentationDataPath,'WOMorph')):
         os.makedirs(os.path.join('Segmentation',SegmentationDataPath,'WOMorph'))
@@ -88,8 +88,8 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath)
         kernel = np.ones((4, 4), np.uint8)
         MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :] = cv2.morphologyEx(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :], cv2.MORPH_OPEN, kernel)
         MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :] = cv2.morphologyEx(MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :], cv2.MORPH_CLOSE, kernel)
-        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WOMorph',"SegmentationImage-{}.png".format(lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
-        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WMorph',"SegmentationImage-{}.png".format(lstFilesDCM.index(filenameDCM))), (MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
+        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WOMorph',"SegmentationImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
+        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WMorph',"SegmentationImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
 
 
     # #Segmentation Scan figure
