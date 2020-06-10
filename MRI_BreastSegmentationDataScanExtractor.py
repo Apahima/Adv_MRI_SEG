@@ -11,6 +11,11 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         os.makedirs(os.path.join('Segmentation',SegmentationDataPath,'WOMorph'))
     if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath, 'WMorph')):
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'WMorph'))
+    if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThresh')):
+        os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThresh'))
+    if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThreshCherryPick')):
+        os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThreshCherryPick'))
+
 
     PathDicom = SegmentationDataPath
     lstFilesDCM = []  # create an empty list
@@ -77,7 +82,8 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
 
     Seg_ArrayDicom[min(Seg_x):max(Seg_x),min(Seg_y):max(Seg_y),min(Seg_z):max(Seg_z)] = 1
     ######
-
+    PicturesHistograms = np.zeros(len(lstFilesDCM), dtype=int)
+    PreprocessingMedicalImage = []
     # loop through all the DICOM files
     for filenameDCM in lstFilesDCM:
         # read the file
@@ -85,11 +91,44 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         # store the raw image data
         ArrayDicom[lstFilesDCM.index(filenameDCM),:, :] = ds.pixel_array
 
-        kernel = np.ones((4, 4), np.uint8)
+        kernel = np.ones((3, 3), np.uint8)
+
+        #Doing morphological operation, first I'm doing thresholding for the image then I used open (dilute and then erode) to remove noise and close the black pixels inside the lesions
+        PreprocessingMedicalImage = cv2.morphologyEx(cv2.threshold(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel)
+        # PreprocessingMedicalImage.append(cv2.morphologyEx(cv2.threshold(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel))
+
+        #Histogram of pixel summary normalized by 255
+        PicturesHistograms[lstFilesDCM.index(filenameDCM)] = np.sum(PreprocessingMedicalImage) / 255
+
+
+
+        #Doing OPEN and CLOSE sequentially without using threshold before
         MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :] = cv2.morphologyEx(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :], cv2.MORPH_OPEN, kernel)
         MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :] = cv2.morphologyEx(MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :], cv2.MORPH_CLOSE, kernel)
-        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WOMorph',"SegmentationImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
-        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WMorph',"SegmentationImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
+
+        #Saving the three configuration
+        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WOMorph',"SegImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
+        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'WMorph',"SegImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (MorphArrayDicom[lstFilesDCM.index(filenameDCM), :, :]), cmap='gray')
+        pyplot.imsave(os.path.join('Segmentation',SegmentationDataPath,'AdaptiveThresh',"SegImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))),PreprocessingMedicalImage,cmap='gray')
+
+
+    Precentage = 0.8  # 80% deviation from the maximum value
+    MinPixels = 200
+    # Saving the indices for the most segnificant pictures
+    indices = []
+    for i, ScanIndex in enumerate(PicturesHistograms):
+        if ScanIndex > (1 - Precentage) * PicturesHistograms.max():
+            if ScanIndex > MinPixels:
+                indices.append(i)
+                pyplot.imsave(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThreshCherryPick',"SegImage-{}-{}-{}.png".format(PatientID, PatientDateScan,i)),
+                          cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
+    #
+    print('Most significant scans are:', indices)
+    # pyplot.figure(dpi=300)
+    # pyplot.axes().set_aspect('equal', 'datalim')
+    # pyplot.set_cmap(pyplot.gray())
+    # pyplot.imshow(cv2.morphologyEx(cv2.threshold(ArrayDicom[27, :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel))
+    # pyplot.show()
 
 
     # #Segmentation Scan figure
@@ -115,7 +154,7 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
     #
     # os.mkdir(os.path.join('Segmentation', SegmentationDataPath))
     # pyplot.imsave("Test\SegmentationImage-{}.png".format(i), (ArrayDicom[i, :, :]),cmap='gray')
-
+    return indices
 
 if __name__ == "__main__":
     SegmentationDataPath = os.path.join('RawData', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31000.000000-Dynamic-3dfgre SER-42809')

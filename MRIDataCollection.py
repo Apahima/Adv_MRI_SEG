@@ -38,9 +38,9 @@ for PatientID in os.listdir(PathDataset):
         # BreastTissueSegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Breast Tissue Segmentation' in s]
 
         print(PatientFilesPath[0])
-        MRI_Ex(PatientFilesPath[RawDataScanIndeces],PatientID,PatientDateScan)
-        MRI_Seg(PatientFilesPath[PESegDataScanIndeces],PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)    #PE Segmentation
-        MRI_Seg(PatientFilesPath[SERSegDataScanIndeces], PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)  #SER Segmentation
+        indices = MRI_Seg(PatientFilesPath[PESegDataScanIndeces],PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)    #PE Segmentation
+        #_ = MRI_Seg(PatientFilesPath[SERSegDataScanIndeces], PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)  #Optional SER Segmentation
+        MRI_Ex(PatientFilesPath[RawDataScanIndeces], PatientID, PatientDateScan,indices)
 
 
 print('Finish')
