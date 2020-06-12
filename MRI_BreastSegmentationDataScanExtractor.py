@@ -4,6 +4,7 @@ import os
 from pydicom.data import get_testdata_file
 import numpy as np
 import cv2
+import logging
 
 def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath, PatientID, PatientDateScan):
 
@@ -13,8 +14,8 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'WMorph'))
     if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThresh')):
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThresh'))
-    if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThreshCherryPick')):
-        os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThreshCherryPick'))
+    if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AT-CP')):
+        os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AT-CP'))
 
 
     PathDicom = SegmentationDataPath
@@ -30,8 +31,15 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
     # Load dimensions based on the number of rows, columns, and slices (along the X axis)
     ConstPixelDims = (len(lstFilesDCM), int(RefDs.Rows), int(RefDs.Columns))
 
+
+    #In case we don;t have SpacingBetweenSlices
+    try:
+        SpacingBetweenSlices = float(RefDs.SpacingBetweenSlices)
+    except:
+        SpacingBetweenSlices = float(2.5)
+
     # Load spacing values (in mm)
-    ConstPixelSpacing = (float(RefDs.SpacingBetweenSlices), float(RefDs.PixelSpacing[0]), float(RefDs.PixelSpacing[1]))
+    ConstPixelSpacing = (SpacingBetweenSlices, float(RefDs.PixelSpacing[0]), float(RefDs.PixelSpacing[1]))
 
     x = np.arange(0.0, (ConstPixelDims[0]+1)*ConstPixelSpacing[0], ConstPixelSpacing[0])
     y = np.arange(0.0, (ConstPixelDims[1]+1)*ConstPixelSpacing[1], ConstPixelSpacing[1])
@@ -84,6 +92,23 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
     ######
     PicturesHistograms = np.zeros(len(lstFilesDCM), dtype=int)
     PreprocessingMedicalImage = []
+
+    # loop through all the DICOM files to find scan dynamic range
+    DynamicRangeMin = 0
+    DynamicRangeMax = 0
+    for filenameDCM in lstFilesDCM:
+        # read the file
+        ds = dicom.read_file(filenameDCM)
+        # store the raw image data
+        ArrayDicom[lstFilesDCM.index(filenameDCM),:, :] = ds.pixel_array
+
+        if np.min(ArrayDicom[lstFilesDCM.index(filenameDCM),:, :]) < DynamicRangeMin:
+            DynamicRangeMin = np.min(ArrayDicom[lstFilesDCM.index(filenameDCM),:, :])
+        if np.max(ArrayDicom[lstFilesDCM.index(filenameDCM),:, :]) > DynamicRangeMax:
+            DynamicRangeMax = np.max(ArrayDicom[lstFilesDCM.index(filenameDCM),:, :])
+
+    ImageThreshold = (DynamicRangeMax - DynamicRangeMin)*0.1
+
     # loop through all the DICOM files
     for filenameDCM in lstFilesDCM:
         # read the file
@@ -94,7 +119,7 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         kernel = np.ones((3, 3), np.uint8)
 
         #Doing morphological operation, first I'm doing thresholding for the image then I used open (dilute and then erode) to remove noise and close the black pixels inside the lesions
-        PreprocessingMedicalImage = cv2.morphologyEx(cv2.threshold(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel)
+        PreprocessingMedicalImage = cv2.morphologyEx(cv2.threshold(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :].astype('uint8'), ImageThreshold, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel)
         # PreprocessingMedicalImage.append(cv2.morphologyEx(cv2.threshold(ArrayDicom[lstFilesDCM.index(filenameDCM), :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel))
 
         #Histogram of pixel summary normalized by 255
@@ -113,15 +138,18 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
 
 
     Precentage = 0.8  # 80% deviation from the maximum value
-    MinPixels = 200
+    MinPixels = 100
     # Saving the indices for the most segnificant pictures
     indices = []
     for i, ScanIndex in enumerate(PicturesHistograms):
         if ScanIndex > (1 - Precentage) * PicturesHistograms.max():
             if ScanIndex > MinPixels:
                 indices.append(i)
-                pyplot.imsave(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThreshCherryPick',"SegImage-{}-{}-{}.png".format(PatientID, PatientDateScan,i)),
-                          cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
+                # pyplot.imsave(os.path.join('Segmentation', SegmentationDataPath,'AT-CP',"SegImage-{}-{}-{}.png".format(PatientID, PatientDateScan,i)),
+                #           cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
+                #Prepare the Dataset
+                pyplot.imsave(os.path.join('Data','ISPY1','Mask',"SegImage-{}-{}-{}.png".format(PatientID, PatientDateScan, i)),
+                              cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255,cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel),cmap='gray')
     #
     print('Most significant scans are:', indices)
     # pyplot.figure(dpi=300)
@@ -130,6 +158,8 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
     # pyplot.imshow(cv2.morphologyEx(cv2.threshold(ArrayDicom[27, :, :].astype('uint8'), 30, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel))
     # pyplot.show()
 
+    if not indices:
+        logging.info('Not extracted scans for %s', PatientID)
 
     # #Segmentation Scan figure
     # # i = 27
@@ -157,7 +187,7 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
     return indices
 
 if __name__ == "__main__":
-    SegmentationDataPath = os.path.join('RawData', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31000.000000-Dynamic-3dfgre SER-42809')
-    SegmentationMaskDataPath = os.path.join('RawData', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '32001.000000-Breast Tissue Segmentation-29336')
+    SegmentationDataPath = os.path.join('DataBase','ISPY1', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31000.000000-Dynamic-3dfgre SER-42809')
+    SegmentationMaskDataPath = os.path.join('DataBase','ISPY1', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '32001.000000-Breast Tissue Segmentation-29336')
     Raw = MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath)
     print('Finish')

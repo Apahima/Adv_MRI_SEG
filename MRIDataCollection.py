@@ -1,46 +1,66 @@
 import os
+import logging
 from MRI_BreastRawDataScanExtractor import MRI_RawDataExtractor as MRI_Ex
 from MRI_BreastSegmentationDataScanExtractor import MRI_SegentationDataExtractor as MRI_Seg
 
-OriginalScan = os.path.join('RawData','ISPY1_1009','03-16-1985-485859-MR BREASTUNI UE-34504','3.000000-Dynamic-3dfgre-93714')
-SegmentationDataPath, SegmentationMaskDataPath = (os.path.join('RawData', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31001.000000-Dynamic-3dfgre PE1-39677')
-    ,os.path.join('RawData', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '32001.000000-Breast Tissue Segmentation-29336'))
 
-PathDataset = os.path.join('Rawdata')
+logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/Debug.log')
+
+OriginalScan = os.path.join('DataBase','ISPY1','ISPY1_1009','03-16-1985-485859-MR BREASTUNI UE-34504','3.000000-Dynamic-3dfgre-93714')
+SegmentationDataPath, SegmentationMaskDataPath = (os.path.join('DataBase','ISPY1', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31001.000000-Dynamic-3dfgre PE1-39677')
+    ,os.path.join('DataBase','ISPY1', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '32001.000000-Breast Tissue Segmentation-29336'))
+
+PathDataset = os.path.join('DataBase','ISPY1')
 
 # a = [x[0] for x in os.walk(PathDataset)]
 
 for PatientID in os.listdir(PathDataset):
     print(PatientID)
-    for PatientDateScan in os.listdir(os.path.join(PathDataset,PatientID)):
-        PatientFilesPath = [x[0] for x in os.walk(os.path.join(PathDataset,PatientID,PatientDateScan))]
+    try:
+        for PatientDateScan in os.listdir(os.path.join(PathDataset,PatientID)):
+            PatientFilesPath = [x[0] for x in os.walk(os.path.join(PathDataset,PatientID,PatientDateScan))]
 
-        for i, File in enumerate(PatientFilesPath):
-            if 'Dynamic-3dfgre' in File:
-                if 'PE1' not in File:
-                    if 'SER' not in File:
-                        RawDataScanIndeces = i
+            RawDataScanIndeces = []
+            PESegDataScanIndeces = []
+            SERSegDataScanIndeces = []
+            BreastTissueSegDataScanIndeces = []
+
+            for i, File in enumerate(PatientFilesPath):
+                # if 'Dynamic-3dfgre' in File:
+                #     if 'PE1' not in File:
+                #         if 'SER' not in File:
+                #             RawDataScanIndeces = i
                 if 'PE1' in File:
                     PESegDataScanIndeces = i
-                if 'SER' in File:
+                elif 'SER' in File:
                     SERSegDataScanIndeces = i
+                elif 'Breast Tissue Segmentation' in File:
+                    if 'VOI' not in File:
+                        BreastTissueSegDataScanIndeces = i
+                else:
+                    RawDataScanIndeces = i
 
 
-            if 'Breast Tissue Segmentation' in File:
-                if 'VOI' not in File:
-                    BreastTissueSegDataScanIndeces = i
+            print('Folder With data indices- (RawData,PE1,SER,BreastTissueSegmentation): {}-{}-{}-{}'.format(RawDataScanIndeces,PESegDataScanIndeces,SERSegDataScanIndeces,BreastTissueSegDataScanIndeces))
 
 
-        #         indices.append(i)
-        # RawDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Dynamic-3dfgre' in s]
-        # PESegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Dynamic-3dfgre' & 'PE1'  in s]
-        # SERSegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Dynamic-3dfgre' & 'SER' in s]
-        # BreastTissueSegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Breast Tissue Segmentation' in s]
 
-        print(PatientFilesPath[0])
-        indices = MRI_Seg(PatientFilesPath[PESegDataScanIndeces],PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)    #PE Segmentation
-        #_ = MRI_Seg(PatientFilesPath[SERSegDataScanIndeces], PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)  #Optional SER Segmentation
-        MRI_Ex(PatientFilesPath[RawDataScanIndeces], PatientID, PatientDateScan,indices)
+            #         indices.append(i)
+            # RawDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Dynamic-3dfgre' in s]
+            # PESegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Dynamic-3dfgre' & 'PE1'  in s]
+            # SERSegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Dynamic-3dfgre' & 'SER' in s]
+            # BreastTissueSegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Breast Tissue Segmentation' in s]
+
+            print(PatientFilesPath[0])
+            indices = MRI_Seg(PatientFilesPath[PESegDataScanIndeces],PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)    #PE Segmentation
+            #_ = MRI_Seg(PatientFilesPath[SERSegDataScanIndeces], PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)  #Optional SER Segmentation
+            MRI_Ex(PatientFilesPath[RawDataScanIndeces], PatientID, PatientDateScan,indices)
+
+    except Exception as ex:
+        # print('Unable to Pre-Processing Patient:', PatientID)
+        # print(ex)
+        logging.info('Unable to Pre-Processing Patient: %s', PatientID)
+        logging.debug(ex)
 
 
 print('Finish')

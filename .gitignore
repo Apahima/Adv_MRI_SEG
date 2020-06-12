@@ -1,2 +1,3 @@
 *.dcm
-*.png
+DataBase/
+Segmentation/

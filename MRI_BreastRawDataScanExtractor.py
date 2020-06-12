@@ -26,8 +26,15 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
     # Load dimensions based on the number of rows, columns, and slices (along the X axis)
     ConstPixelDims = (len(lstFilesDCM), int(RefDs.Rows), int(RefDs.Columns))
 
+
+    #In case we don;t have SpacingBetweenSlices
+    try:
+        SpacingBetweenSlices = float(RefDs.SpacingBetweenSlices)
+    except:
+        SpacingBetweenSlices = float(2.5)
+
     # Load spacing values (in mm)
-    ConstPixelSpacing = (float(RefDs.SpacingBetweenSlices), float(RefDs.PixelSpacing[0]), float(RefDs.PixelSpacing[1]))
+    ConstPixelSpacing = (SpacingBetweenSlices, float(RefDs.PixelSpacing[0]), float(RefDs.PixelSpacing[1]))
 
     x = np.arange(0.0, (ConstPixelDims[0]+1)*ConstPixelSpacing[0], ConstPixelSpacing[0])
     y = np.arange(0.0, (ConstPixelDims[1]+1)*ConstPixelSpacing[1], ConstPixelSpacing[1])
@@ -47,8 +54,11 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
         pyplot.imsave(os.path.join('Segmentation', ScanDataPath,"ScanImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM),:, :]), cmap='gray')
 
     for i in indices:
-        # store the raw image data
-        pyplot.imsave(os.path.join('Segmentation', ScanDataPath,'Scan_CherryPick',"ScanImage-{}-{}-{}.png".format(PatientID,PatientDateScan,i)), (ArrayDicom[i,:, :]), cmap='gray')
+        # # store the raw image data
+        # pyplot.imsave(os.path.join('Segmentation', ScanDataPath,'Scan_CherryPick',"ScanImage-{}-{}-{}.png".format(PatientID,PatientDateScan,i)), (ArrayDicom[i,:, :]), cmap='gray')
+
+        # Prepare the Dataset
+        pyplot.imsave(os.path.join('Data', 'ISPY1','Image',"ScanImage-{}-{}-{}.png".format(PatientID, PatientDateScan, i)),(ArrayDicom[i, :, :]), cmap='gray')
 
     # #Original Scan figure
     # # i = 37
@@ -64,5 +74,5 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
 
 
 if __name__ == "__main__":
-    Raw = MRI_RawDataExtractor(os.path.join('RawData','ISPY1_1009','03-16-1985-485859-MR BREASTUNI UE-34504','3.000000-Dynamic-3dfgre-93714'))
+    Raw = MRI_RawDataExtractor(os.path.join('DataBase','ISPY1','ISPY1_1009','03-16-1985-485859-MR BREASTUNI UE-34504','3.000000-Dynamic-3dfgre-93714'))
     print('Finish')

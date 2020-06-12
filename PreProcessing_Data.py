@@ -5,9 +5,9 @@ from pydicom.data import get_testdata_file
 import numpy as np
 
 
-os.path.join('RawData','ISPY1_1002','11-02-1984-868859-MR BREASTUNI UE-60097','31000.000000-Dynamic-3dfgre SER-66206')
+os.path.join('DataBase','ISPY1','ISPY1_1002','11-02-1984-868859-MR BREASTUNI UE-60097','31000.000000-Dynamic-3dfgre SER-66206')
 
-PathDicom = os.path.join('RawData','ISPY1_1002','11-02-1984-868859-MR BREASTUNI UE-60097','31000.000000-Dynamic-3dfgre SER-66206')
+PathDicom = os.path.join('DataBase','ISPY1','ISPY1_1002','11-02-1984-868859-MR BREASTUNI UE-60097','31000.000000-Dynamic-3dfgre SER-66206')
 lstFilesDCM = []  # create an empty list
 for dirName, subdirList, fileList in os.walk(PathDicom):
     for filename in fileList:
@@ -36,7 +36,7 @@ ArrayDicom = np.zeros(ConstPixelDims, dtype=RefDs.pixel_array.dtype)
 # The array is sized based on 'ConstPixelDims'
 Seg_ArrayDicom = np.zeros(ConstPixelDims, dtype=RefDs.pixel_array.dtype)
 #Segmentation Layer
-image_path = [r'RawData\ISPY1_1002\11-02-1984-868859-MR BREASTUNI UE-60097\32001.000000-Breast Tissue Segmentation-93996\1-1.dcm']
+image_path = [r'DataBase\ISPY1\ISPY1_1002\11-02-1984-868859-MR BREASTUNI UE-60097\32001.000000-Breast Tissue Segmentation-93996\1-1.dcm']
 ds_seg = dicom.dcmread(image_path[0])
 
 #Calc the Segmentation VOI center
@@ -85,7 +85,7 @@ pyplot.pcolormesh(y, z, np.flipud(ArrayDicom[i,:, :]*np.fliplr(Seg_ArrayDicom[i,
 pyplot.show()
 
 # specify your image path
-image_path = [r'RawData\ISPY1_1002\11-02-1984-868859-MR BREASTUNI UE-60097\32101.000000-VOI Breast Tissue Segmentation-96213\1-1.dcm']
+image_path = [r'DataBase\ISPY1\ISPY1_1002\11-02-1984-868859-MR BREASTUNI UE-60097\32101.000000-VOI Breast Tissue Segmentation-96213\1-1.dcm']
 
 ds_seg = dicom.dcmread(image_path[0])
 
