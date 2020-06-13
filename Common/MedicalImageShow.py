@@ -10,7 +10,7 @@ def plot_img_array(img_array, ncol=3):
         plots[i // ncol, i % ncol]
         plots[i // ncol, i % ncol].imshow(np.sum(img_array[i], axis=0), cmap='gray')
 
-    plt.savefig('SidebySide_SegmentationBestFit.png')
+    plt.savefig(r'SidebySide_SegmentationBestFit.png')
     plt.show()
 
 from functools import reduce
