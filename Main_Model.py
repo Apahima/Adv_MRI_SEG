@@ -4,6 +4,8 @@ import random
 from Common.Medical_Parse import Args
 from Common.MedicalDataLoading import MedicalDataLoading
 import torch
+import logging
+import os
 
 
 from torch.utils.data import DataLoader
@@ -18,6 +20,8 @@ import time
 import copy
 import pathlib
 from Common import MedicalImageShow
+
+logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/Model_Debug.log')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

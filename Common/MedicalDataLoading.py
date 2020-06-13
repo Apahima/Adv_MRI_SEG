@@ -5,6 +5,7 @@ from pathlib import Path as Path
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset, DataLoader
 # from torchvision import transforms, datasets, models
+import logging
 
 class MedicalDataloaderConstruct(Dataset):
 
@@ -24,19 +25,27 @@ class MedicalDataloaderConstruct(Dataset):
 def MedicalDataLoading(path):
     X_data = []
     files = glob.glob(str(Path.joinpath(path , 'Image')) + '/' + '*.png')
+
     for myFile in files:
-        print(myFile)
+        # print(myFile)
         image = np.expand_dims(cv2.imread(myFile, cv2.IMREAD_GRAYSCALE), axis=0).astype('float32') #Grayscale loading but dim #1 save to be compatible with Unet loading
-        X_data.append(image)
+        if image.shape == (1,256,256):
+            X_data.append(image)
+        else:
+            logging.info('File {} not added to Dataloader'.format(myFile))
+            logging.info('Image size might be different that (256,256). The size actuarl image size %s', image.shape)
     print('X_data shape:', np.array(X_data).shape)
 
     Y_data = []
     files = glob.glob(str(Path.joinpath(path , 'Mask')) + '/' + '*.png')
     for myFile in files:
-        print(myFile)
+        # print(myFile)
         image = np.expand_dims(cv2.imread(myFile, cv2.IMREAD_GRAYSCALE), axis=0).astype('float32') #Grayscale loading but dim #1 save to be compatible with Unet loading
-        Y_data.append(image)
-
+        if image.shape == (1,256,256):
+            Y_data.append(image)
+        else:
+            logging.info('File {} not added to Dataloader'.format(myFile))
+            logging.info('Image size might be different that (256,256). The size actuarl image size %s', image.shape)
     print('Y_data shape:', np.array(Y_data).shape)
 
     X_train, X_test, y_train, y_test = train_test_split(X_data, Y_data, test_size=0.2, random_state=1)
