@@ -1,0 +1,5 @@
+INFO:root:Not extracted scans for ISPY1_1118
+INFO:root:Not extracted scans for ISPY1_1144
+INFO:root:Unable to Pre-Processing Patient: ISPY1_1166
+DEBUG:root:could not broadcast input array from shape (104,256,256) into shape (256,256)
+INFO:root:Not extracted scans for ISPY1_1179
