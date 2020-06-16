@@ -54,11 +54,11 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
         pyplot.imsave(os.path.join('Segmentation', ScanDataPath,"ScanImage-{}-{}-{}.png".format(PatientID,PatientDateScan,lstFilesDCM.index(filenameDCM))), (ArrayDicom[lstFilesDCM.index(filenameDCM),:, :]), cmap='gray')
 
     for i in indices:
-        # # store the raw image data
-        # pyplot.imsave(os.path.join('Segmentation', ScanDataPath,'Scan_CherryPick',"ScanImage-{}-{}-{}.png".format(PatientID,PatientDateScan,i)), (ArrayDicom[i,:, :]), cmap='gray')
+        # Save scans for debugging
+        pyplot.imsave(os.path.join('Segmentation', ScanDataPath,'Scan_CherryPick',"{}-{}-{}-ScanImage.png".format(PatientID,PatientDateScan,i)), (ArrayDicom[i,:, :]), cmap='gray')
 
         # Prepare the Dataset
-        pyplot.imsave(os.path.join('Data', 'ISPY1','Image',"ScanImage-{}-{}-{}.png".format(PatientID, PatientDateScan, i)),(ArrayDicom[i, :, :]), cmap='gray')
+        pyplot.imsave(os.path.join('Data', 'ISPY1','Image',"{}-{}-{}-ScanImage.png".format(PatientID, PatientDateScan, i)),(ArrayDicom[i, :, :]), cmap='gray')
 
     # #Original Scan figure
     # # i = 37

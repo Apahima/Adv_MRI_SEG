@@ -30,7 +30,7 @@ for PatientID in os.listdir(PathDataset):
                 #     if 'PE1' not in File:
                 #         if 'SER' not in File:
                 #             RawDataScanIndeces = i
-                if 'PE1' in File:
+                if 'PE' in File:
                     PESegDataScanIndeces = i
                 elif 'SER' in File:
                     SERSegDataScanIndeces = i

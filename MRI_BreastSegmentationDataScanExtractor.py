@@ -145,10 +145,12 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         if ScanIndex > (1 - Precentage) * PicturesHistograms.max():
             if ScanIndex > MinPixels:
                 indices.append(i)
-                # pyplot.imsave(os.path.join('Segmentation', SegmentationDataPath,'AT-CP',"SegImage-{}-{}-{}.png".format(PatientID, PatientDateScan,i)),
-                #           cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
+                #Save for scans debugging
+                pyplot.imsave(os.path.join('Segmentation', SegmentationDataPath,'AT-CP',"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan,i)),
+                          cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
+
                 #Prepare the Dataset
-                pyplot.imsave(os.path.join('Data','ISPY1','Mask',"SegImage-{}-{}-{}.png".format(PatientID, PatientDateScan, i)),
+                pyplot.imsave(os.path.join('Data','ISPY1','Mask',"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan, i)),
                               cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255,cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel),cmap='gray')
     #
     print('Most significant scans are:', indices)
