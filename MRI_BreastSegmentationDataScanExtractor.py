@@ -16,6 +16,8 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThresh'))
     if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AT-CP')):
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AT-CP'))
+    if not os.path.exists(os.path.join('Data','ISPY1','Mask')):
+        os.makedirs(os.path.join('Data','ISPY1','Mask'))
 
 
     PathDicom = SegmentationDataPath
@@ -186,7 +188,7 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
     #
     # os.mkdir(os.path.join('Segmentation', SegmentationDataPath))
     # pyplot.imsave("Test\SegmentationImage-{}.png".format(i), (ArrayDicom[i, :, :]),cmap='gray')
-    return indices
+    return indices, len(lstFilesDCM)
 
 if __name__ == "__main__":
     SegmentationDataPath = os.path.join('DataBase','ISPY1', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31000.000000-Dynamic-3dfgre SER-42809')

@@ -52,15 +52,21 @@ for PatientID in os.listdir(PathDataset):
             # BreastTissueSegDataScanIndeces = [i for i, s in enumerate(PatientFilesPath) if 'Breast Tissue Segmentation' in s]
 
             print(PatientFilesPath[0])
-            indices = MRI_Seg(PatientFilesPath[PESegDataScanIndeces],PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)    #PE Segmentation
+            indices, SegmentationScansNumber = MRI_Seg(PatientFilesPath[PESegDataScanIndeces],PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)    #PE Segmentation
             #_ = MRI_Seg(PatientFilesPath[SERSegDataScanIndeces], PatientFilesPath[BreastTissueSegDataScanIndeces],PatientID,PatientDateScan)  #Optional SER Segmentation
-            MRI_Ex(PatientFilesPath[RawDataScanIndeces], PatientID, PatientDateScan,indices)
+            BreastScansNumber = MRI_Ex(PatientFilesPath[RawDataScanIndeces], PatientID, PatientDateScan,indices)
+
+            assert SegmentationScansNumber == BreastScansNumber #Checking whether the Scans images are equal to the segmentation slice
+
+    except AssertionError as error:
+        logging.debug('{}-Scan and Segmentation are Unequal'.format(PatientID))
 
     except Exception as ex:
         # print('Unable to Pre-Processing Patient:', PatientID)
         # print(ex)
         logging.info('Unable to Pre-Processing Patient: %s', PatientID)
         logging.debug(ex)
+        logging.debug('Scan and Segmentation are Unequal')
 
 
 print('Finish')

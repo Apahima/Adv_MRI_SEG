@@ -11,6 +11,8 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
         os.makedirs(os.path.join('Segmentation',ScanDataPath))
     if not os.path.exists(os.path.join('Segmentation',ScanDataPath,'Scan_CherryPick')):
         os.makedirs(os.path.join('Segmentation',ScanDataPath,'Scan_CherryPick'))
+    if not os.path.exists(os.path.join('Data','ISPY1','Image')):
+        os.makedirs(os.path.join('Data','ISPY1','Image'))
 
     PathDicom = ScanDataPath
     lstFilesDCM = []  # create an empty list
@@ -70,7 +72,7 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
 
 
 
-    return(ArrayDicom)
+    return len(lstFilesDCM)
 
 
 if __name__ == "__main__":
