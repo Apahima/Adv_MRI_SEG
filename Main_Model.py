@@ -6,6 +6,11 @@ from Common.MedicalDataLoading import MedicalDataLoading
 import torch
 import logging
 import os
+from datetime import datetime
+from datetime import date
+from tensorboardX import SummaryWriter
+import torchvision
+import shutil
 
 
 from torch.utils.data import DataLoader
@@ -49,7 +54,7 @@ def print_metrics(metrics, epoch_samples, phase):
     print("{}: {}".format(phase, ", ".join(outputs)))
 
 
-def train_model(model, optimizer, scheduler, dataloaders, args, num_epochs=25):
+def train_model(model, optimizer, scheduler, dataloaders, args, writer, num_epochs=25):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 1e10
 
@@ -103,12 +108,20 @@ def train_model(model, optimizer, scheduler, dataloaders, args, num_epochs=25):
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
 
+
         time_elapsed = time.time() - since
+
+        #writing the results to TensorboardX
+        writer.add_scalar('BCE', metrics['bce'], epoch)
+        writer.add_scalar('DICE', metrics['dice'], epoch)
+        writer.add_scalar('LOSS', metrics['loss'], epoch)
+
         print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val loss: {:4f}'.format(best_loss))
 
     # load best model weights
     model.load_state_dict(best_model_wts)
+    save_model(args, args.exp_dir, model, optimizer, best_loss)
     return model
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -117,7 +130,14 @@ print(device)
 
 def main(args):
 
+    #Construct the summary:
+    now = datetime.now()
+    construct_time_stamp = now.strftime("_%I-%M-%S %p")
     Data_path = args.data_path
+    folder_name = str(date.today()) + str(construct_time_stamp)
+
+    writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
+
     train_set, val_set = MedicalDataLoading(Data_path)
 
     image_datasets = {
@@ -154,11 +174,15 @@ def main(args):
 
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
-    model = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, num_epochs=args.num_epochs)
+    model = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, num_epochs=args.num_epochs)
 
     model.eval()  # Set model to evaluate mode
 
-    inputs, labels = next(iter(dataloaders['val']))
+    visualize(args, model, dataloaders, writer)
+
+
+    ### Block for saving plot side by side
+    inputs, labels = next(iter(dataloaders['val']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
     inputs = inputs.to(args.device)
     labels = labels.to(args.device)
 
@@ -167,15 +191,53 @@ def main(args):
     inputs = inputs.cpu().numpy()
     pred = pred.data.cpu().numpy()
     labels = labels.cpu().numpy()
-    print(pred.shape)
+    print('Number of scans to plot side by side:', pred.shape)
 
-    MedicalImageShow.plot_side_by_side([inputs, labels, pred], args)
+    MedicalImageShow.plot_side_by_side([inputs, labels, pred], args, writer)
+
+    ###
+    writer.close()
+
+def visualize(args, model, dataloaders, writer):
+    def save_image(image, tag):
+        # image -= image.min()
+        # image /= image.max()
+        grid = torchvision.utils.make_grid(image, nrow=4, pad_value=1)
+        writer.add_image(tag, grid)
+
+    model.eval()
+    with torch.no_grad():
+        inputs, labels = next(iter(dataloaders['val']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
+        inputs = inputs.to(args.device)
+        labels = labels.to(args.device)
+
+        pred = model(inputs)
+
+        inputs = inputs.cpu().numpy()
+        pred = pred.data.cpu().numpy()
+        labels = labels.cpu().numpy()
+        print(pred.shape)
+
+        save_image(labels, 'Ground Throuth Segmentation')
+        save_image(pred, 'Segmentation')
+        save_image(inputs, 'Original Scan')
 
 
 
-
-
-
+def save_model(args, exp_dir, model, optimizer, best_loss):
+    torch.save(
+        {
+            'epoch': args.num_epochs,
+            'args': args,
+            'model': model.state_dict(),
+            'optimizer': optimizer.state_dict(),
+            'best_loss': best_loss,
+            'exp_dir': exp_dir
+        },
+        f=exp_dir / 'model.pt'
+    )
+    # if is_new_best:
+    #     shutil.copyfile(exp_dir / 'model.pt', exp_dir / 'best_model.pt')
 
 
 def create_arg_parser():
@@ -209,6 +271,8 @@ def create_arg_parser():
                              '"--checkpoint" should be set with this')
     parser.add_argument('--checkpoint', type=str,
                         help='Path to an existing checkpoint. Used along with "--resume"')
+    parser.add_argument('--output-chans',type=int, default=1,
+                        help='For multi-segmentation used Chans -> #Classes for single segmentation used Chans -> 1')
 
 
     # parser.add_argument('--data-split', choices=['val', 'test'], required=True,
