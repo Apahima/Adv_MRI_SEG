@@ -200,8 +200,8 @@ def main(args):
 
 def visualize(args, model, dataloaders, writer):
     def save_image(image, tag):
-        # image -= image.min()
-        # image /= image.max()
+        image -= image.min()
+        image /= image.max()
         grid = torchvision.utils.make_grid(image, nrow=4, pad_value=1)
         writer.add_image(tag, grid)
 
