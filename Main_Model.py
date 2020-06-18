@@ -193,7 +193,7 @@ def main(args):
     labels = labels.cpu().numpy()
     print('Number of scans to plot side by side:', pred.shape)
 
-    MedicalImageShow.plot_side_by_side([inputs, labels, pred], args, writer)
+    MedicalImageShow.plot_side_by_side([inputs, labels, pred], args)
 
     ###
     writer.close()
@@ -213,14 +213,11 @@ def visualize(args, model, dataloaders, writer):
 
         pred = model(inputs)
 
-        inputs = inputs.cpu().numpy()
-        pred = pred.data.cpu().numpy()
-        labels = labels.cpu().numpy()
-        print(pred.shape)
-
         save_image(labels, 'Ground Throuth Segmentation')
         save_image(pred, 'Segmentation')
         save_image(inputs, 'Original Scan')
+
+        print('Visualization DONE')
 
 
 
