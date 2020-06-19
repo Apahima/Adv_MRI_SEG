@@ -5,14 +5,14 @@ from pydicom.data import get_testdata_file
 import numpy as np
 
 
-def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
+def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices, args):
 
     if not os.path.exists(os.path.join('Segmentation',ScanDataPath)):
         os.makedirs(os.path.join('Segmentation',ScanDataPath))
     if not os.path.exists(os.path.join('Segmentation',ScanDataPath,'Scan_CherryPick')):
         os.makedirs(os.path.join('Segmentation',ScanDataPath,'Scan_CherryPick'))
-    if not os.path.exists(os.path.join('Data','ISPY1','Image')):
-        os.makedirs(os.path.join('Data','ISPY1','Image'))
+    if not os.path.exists(os.path.join(args.image_path)):
+        os.makedirs(os.path.join(args.image_path))
 
     PathDicom = ScanDataPath
     lstFilesDCM = []  # create an empty list
@@ -60,7 +60,7 @@ def MRI_RawDataExtractor(ScanDataPath,PatientID,PatientDateScan,indices):
         pyplot.imsave(os.path.join('Segmentation', ScanDataPath,'Scan_CherryPick',"{}-{}-{}-ScanImage.png".format(PatientID,PatientDateScan,i)), (ArrayDicom[i,:, :]), cmap='gray')
 
         # Prepare the Dataset
-        pyplot.imsave(os.path.join('Data', 'ISPY1','Image',"{}-{}-{}-ScanImage.png".format(PatientID, PatientDateScan, i)),(ArrayDicom[i, :, :]), cmap='gray')
+        pyplot.imsave(os.path.join(args.image_path,"{}-{}-{}-ScanImage.png".format(PatientID, PatientDateScan, i)),(ArrayDicom[i, :, :]), cmap='gray')
 
     # #Original Scan figure
     # # i = 37

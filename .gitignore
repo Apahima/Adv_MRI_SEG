@@ -4,3 +4,4 @@ Segmentation/
 Temp/
 *.tcia
 *.xml
+*.log

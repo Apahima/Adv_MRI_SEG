@@ -6,7 +6,7 @@ import numpy as np
 import cv2
 import logging
 
-def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath, PatientID, PatientDateScan):
+def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath, PatientID, PatientDateScan,args):
 
     if not os.path.exists(os.path.join('Segmentation',SegmentationDataPath,'WOMorph')):
         os.makedirs(os.path.join('Segmentation',SegmentationDataPath,'WOMorph'))
@@ -16,8 +16,8 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AdaptiveThresh'))
     if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath,'AT-CP')):
         os.makedirs(os.path.join('Segmentation', SegmentationDataPath,'AT-CP'))
-    if not os.path.exists(os.path.join('Data','ISPY1','Mask')):
-        os.makedirs(os.path.join('Data','ISPY1','Mask'))
+    if not os.path.exists(args.mask_path):
+        os.makedirs(args.mask_path)
 
 
     PathDicom = SegmentationDataPath
@@ -152,7 +152,7 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
                           cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
 
                 #Prepare the Dataset
-                pyplot.imsave(os.path.join('Data','ISPY1','Mask',"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan, i)),
+                pyplot.imsave(os.path.join(args.mask_path,"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan, i)),
                               cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255,cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel),cmap='gray')
     #
     print('Most significant scans are:', indices)

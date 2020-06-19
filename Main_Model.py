@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 import random
-from Common.Medical_Parse import Args
+from Common.Unet_Medical_Parse import Args
 from Common.MedicalDataLoading import MedicalDataLoading
 import torch
 import logging
