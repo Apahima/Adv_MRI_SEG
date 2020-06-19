@@ -59,13 +59,17 @@ def MedicalDataLoading(path):
 
     print('Y_data shape:', np.array(Y_data).shape)
 
-    X_train, X_test, y_train, y_test = train_test_split(X_data, Y_data, test_size=0.2, random_state=1)
+    # X_train, X_test, y_train, y_test = train_test_split(X_data, Y_data, test_size=0.2, random_state=1)
+
+    X_train, X_test_val, y_train, y_test_val = train_test_split(X_data, Y_data, test_size=0.2, random_state=1) #Split to 80% Train, And 20% Validation and Test
+    X_test, X_val, y_test, y_val = train_test_split(X_test_val, y_test_val, test_size=0.5, random_state=1)  #Split 10% train 10 Validation
 
     Train = MedicalDataloaderConstruct(X_train, y_train)
-    Val = MedicalDataloaderConstruct(X_test, y_test)
+    Val = MedicalDataloaderConstruct(X_val, y_val)
+    Test = MedicalDataloaderConstruct(X_test, y_test)
 
 
-    return Train, Val
+    return Train, Val, Test
 
 if __name__ == '__main__':
     train, val = MedicalDataLoading(Path(r'..\Data\ISPY1'))

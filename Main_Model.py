@@ -139,15 +139,16 @@ def main(args):
 
     writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
 
-    train_set, val_set = MedicalDataLoading(Data_path)
+    train_set, val_set, test_set = MedicalDataLoading(Data_path)
 
     image_datasets = {
-        'train': train_set, 'val': val_set
+        'train': train_set, 'val': val_set, 'test': test_set
     }
 
     dataloaders = {
         'train': DataLoader(train_set, batch_size=args.batch_size, shuffle=True, num_workers=0),
-        'val': DataLoader(val_set, batch_size=args.batch_size, shuffle=True, num_workers=0)
+        'val': DataLoader(val_set, batch_size=args.batch_size, shuffle=True, num_workers=0),
+        'test': DataLoader(val_set, batch_size=args.batch_size, shuffle=True, num_workers=0)
     }
 
     dataset_sizes = {
@@ -183,7 +184,7 @@ def main(args):
 
 
     ### Block for saving plot side by side
-    inputs, labels = next(iter(dataloaders['val']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
+    inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
     inputs = inputs.to(args.device)
     labels = labels.to(args.device)
 
@@ -208,7 +209,7 @@ def visualize(args, model, dataloaders, writer):
 
     model.eval()
     with torch.no_grad():
-        inputs, labels = next(iter(dataloaders['val']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
+        inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
         inputs = inputs.to(args.device)
         labels = labels.to(args.device)
 
