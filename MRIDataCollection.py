@@ -4,7 +4,7 @@ from MRI_BreastRawDataScanExtractor import MRI_RawDataExtractor as MRI_Ex
 from MRI_BreastSegmentationDataScanExtractor import MRI_SegentationDataExtractor as MRI_Seg
 from Common.RawDataPreProcessing_Medical_Parse import RawDataPreProcessing_Args as RawDataParsing
 
-logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/Debug.log')
+logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/ProProcessing_Debug.log')
 
 # OriginalScan = os.path.join('DataBase','ISPY1','ISPY1_1009','03-16-1985-485859-MR BREASTUNI UE-34504','3.000000-Dynamic-3dfgre-93714')
 # SegmentationDataPath, SegmentationMaskDataPath = (os.path.join('DataBase','ISPY1', 'ISPY1_1009', '03-16-1985-485859-MR BREASTUNI UE-34504', '31001.000000-Dynamic-3dfgre PE1-39677')
