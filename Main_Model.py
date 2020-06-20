@@ -209,9 +209,10 @@ def visualize(args, model, dataloaders, writer):
         writer.add_image(tag, grid)
 
     def save_image_as_file(image,tag,args):
-        image = image.cpu().numpy()
-        timest = datetime.now().strftime("%I-%M-%S")
-        plt.imsave(os.path.join(args.exp_dir,'{}-{}.png'.format(timest,tag)), image)
+        for i, image in enumerate(image):
+            image = image.cpu().numpy()
+            timest = datetime.now().strftime("%I-%M-%S")
+            plt.imsave(os.path.join(args.exp_dir,'{}-{}-{}.png'.format(timest,tag,i)), image)
 
     model.eval()
     with torch.no_grad():
