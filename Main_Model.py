@@ -210,7 +210,8 @@ def visualize(args, model, dataloaders, writer):
 
     def save_image_as_file(image,tag,args):
         image = image.cpu().numpy()
-        plt.imsave(os.path.join(args.exp_dir, datetime.now().strftime("_%I-%M-%S %p"), tag, '.png'), image)
+        timest = datetime.now().strftime("_%I-%M-%S %p")
+        plt.imsave(os.path.join(args.exp_dir, timest,'{}.png'.format(tag)), image)
 
     model.eval()
     with torch.no_grad():
