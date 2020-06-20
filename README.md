@@ -24,7 +24,8 @@ PE scan - contain tumor responds to neoadjuvant treatment, i.e tumor segmentatio
 SER scan - contain tumor responds to neoadjuvant treatment, i.e tumor segmentation
 Breast tissue segmentation contatin 3D cordinate of the segmantation box.
 
-For more information: https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary
+For more information:
+<a href="https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary" target="_blank">`https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary`</a>
 
 Data Pre-Processing:
 Since the segmentation layer is full scan with tumpr responds to neoadjuvant treatment there are some scans w]o segmentation at all or scan with holes and noise, to be able to eliminate non-usable scans and get good segmentation scan. Image processing tools taking into account.
@@ -78,9 +79,9 @@ This code depends on the following libraries:
 Prior to running the model, the raw files (First scan of each patient) should be download to folder {WorkingDirectory}\ISPY1
 Runing function MRIDataCollection.py
 * Parameters:
-    * --data-path - Where the raw data is located
-    * --image-path - Where to save the scans that fit to the segmenations.
-    * --mask-path - Where to save the segmenations after the PreProcessing phase
+    * `--data-path` - Where the raw data is located
+    * `--image-path` - Where to save the scans that fit to the segmenations.
+    * `--mask-path` - Where to save the segmenations after the PreProcessing phase
 
 **Example:**
 
@@ -89,11 +90,11 @@ Runing function MRIDataCollection.py
 ### Define and Model execution
 * The Model is parser based execution. All needed parameters for optimization are exposed as parser.
 * Parameters:
-    * --num-chnas - Define the first U-Net layer span of layers.
-    * --data-path - Define the folder where Image and Mask folders locatred
-    * --batch-size - Since using as Self-Supervised model only one sample is learned.
-    * --lr - Define Learning rate
-    * --exp-dir - Define where to save Model results to be able to visualize that with TensorBoard.
+    * `--num-chnas` - Define the first U-Net layer span of layers.
+    * `--data-path` - Define the folder where Image and Mask folders locatred
+    * `--batch-size` - Since using as Self-Supervised model only one sample is learned.
+    * `--lr` - Define Learning rate
+    * `--exp-dir` - Define where to save Model results to be able to visualize that with TensorBoard.
 
 **Example:**
 
