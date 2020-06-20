@@ -210,7 +210,7 @@ def visualize(args, model, dataloaders, writer):
 
     def save_image_as_file(image,tag,args):
         for i, image in enumerate(image):
-            image = np.squeeze(image.cpu().numpy(), dim=0)
+            image = np.squeeze(image.cpu().numpy(), axis=0)
             timest = datetime.now().strftime("%I-%M-%S.%f")[:-3]
             plt.imsave(os.path.join(args.exp_dir,'{}-{}-{}.png'.format(timest,tag,i)), image)
 
