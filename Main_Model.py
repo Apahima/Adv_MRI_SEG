@@ -12,6 +12,7 @@ from datetime import date
 from tensorboardX import SummaryWriter
 import torchvision
 import shutil
+import matplotlib.pyplot as plt
 
 
 from torch.utils.data import DataLoader
@@ -201,11 +202,14 @@ def main(args):
     writer.close()
 
 def visualize(args, model, dataloaders, writer):
-    def save_image(image, tag):
+    def save_image_to_writer(image, tag):
         image -= image.min()
         image /= image.max()
         grid = torchvision.utils.make_grid(image, nrow=4, pad_value=1)
         writer.add_image(tag, grid)
+
+    def save_image_as_file(image,tag,args):
+        plt.imsave(os.path.join(args.exp_dir, datetime.now().strftime("_%I-%M-%S %p"), tag, '.png'), image)
 
     model.eval()
     with torch.no_grad():
@@ -215,11 +219,16 @@ def visualize(args, model, dataloaders, writer):
 
         pred = model(inputs)
 
-        save_image(labels, 'Ground Throuth Segmentation')
-        save_image(pred, 'Segmentation')
-        save_image(inputs, 'Original Scan')
-
+        save_image_to_writer(labels, 'Ground Throuth Segmentation')
+        save_image_to_writer(pred, 'Segmentation')
+        save_image_to_writer(inputs, 'Original Scan')
         print('Visualization DONE')
+
+        if args.savevalfile == 'Y':
+            save_image_as_file(labels, 'Ground Throuth Segmentation', args)
+            save_image_as_file(pred, 'Segmentation', args)
+            save_image_as_file(inputs, 'Original Scan', args)
+            print('Visualization DONE')
 
 
 
