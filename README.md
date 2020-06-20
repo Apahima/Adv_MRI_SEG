@@ -7,12 +7,12 @@ The work focus on Investigation of Serial Studies to Predict Your Therapeutic Re
 ISPY1 dataset includes 230 studies with T3 tumors measuring at least 3 cm in diameter by clinical exam or imaging.
 MRI exams were performed within four weeks prior to starting anthracycline-cyclophosphamide chemotherapy (T1, MRI1), at least 2 weeks after the first cycle of AC and prior to the second cycle of AC (T2, MRI2), between anthracycline-cyclophosphamide treatment and taxane therapy if taxane was administered (T3, MRI3), and after the final chemotherapy treatment and prior to surgery (T4, MRI4). The study schema is shown in Figure 1
 
-Add Image
+![Scan Series ISPY1](Img/Fig1.png)
 
 Each patient has four scans series. To develope segmentation tool for breast cancer tumor, first scans (T1, MRI) were taken.
 U-net model has trained with verious structure and loss functions.
 
-Database details:
+### Database:
 Each series contain diffferent scans, for that work the scans that were used is:
 * Full scan
 * Scan with PE
@@ -27,18 +27,18 @@ Breast tissue segmentation contatin 3D cordinate of the segmantation box.
 For more information:
 <a href="https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary" target="_blank">`https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary`</a>
 
-Data Pre-Processing:
+### Data Pre-Processing:
 Since the segmentation layer is full scan with tumpr responds to neoadjuvant treatment there are some scans w]o segmentation at all or scan with holes and noise, to be able to eliminate non-usable scans and get good segmentation scan. Image processing tools taking into account.
 First entire scan dynamic range has been excluded after that each scan preprocess with morphological operation - open and than binary threshold of 10% from the series was taken. All that is to reduce image noise and close segmentation areas, after that preprocess the segmentation layer were ready for tranig model.
 
-Model training:
+### Model training:
 First the whole data gather into pairs of scans and corespondings segmantation layer and then feed into U-net model with XXXX atructure.
 The best parameters were: XXXXX
 
-Results:
+### Results:
 
 
-Conclusions:
+### Conclusions:
 
 
 
@@ -71,6 +71,7 @@ Conclusions:
 ### Dependencies
 This code depends on the following libraries:
 * Scikit-Image 0.16.1
+* OpenCV
 * PyTorch
 * TensorboardX
 * PyDicom 
