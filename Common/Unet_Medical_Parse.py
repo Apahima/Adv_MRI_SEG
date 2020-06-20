@@ -73,7 +73,7 @@ def create_arg_parser():
                         help='Path to an existing checkpoint. Used along with "--resume"')
     parser.add_argument('--output-chans',type=int, default=1,
                         help='For multi-segmentation used Chans -> #Classes for single segmentation used Chans -> 1')
-    parser.add_argument('--savevalfile', type=str,
+    parser.add_argument('--savetestfile', type=str,
                         help='Flag if you want to save evaluation images, Y - for saving')
 
 

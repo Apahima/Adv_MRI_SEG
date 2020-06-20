@@ -209,6 +209,7 @@ def visualize(args, model, dataloaders, writer):
         writer.add_image(tag, grid)
 
     def save_image_as_file(image,tag,args):
+        image = image.cpu().numpy()
         plt.imsave(os.path.join(args.exp_dir, datetime.now().strftime("_%I-%M-%S %p"), tag, '.png'), image)
 
     model.eval()
@@ -224,7 +225,7 @@ def visualize(args, model, dataloaders, writer):
         save_image_to_writer(inputs, 'Original Scan')
         print('Visualization DONE')
 
-        if args.savevalfile == 'Y':
+        if args.savetestfile == 'Y':
             save_image_as_file(labels, 'Ground Throuth Segmentation', args)
             save_image_as_file(pred, 'Segmentation', args)
             save_image_as_file(inputs, 'Original Scan', args)
