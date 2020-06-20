@@ -51,12 +51,16 @@ Conclusions:
     # Refernce for U-Net can be seen at: https://github.com/zhixuhao/unet.git
     
 **Loss funtions**
-    # Several loss functions where used for segmentation tasks. The final lost that used was weighted combination of DICE loss and BCE.
+    
+    # Several loss functions where used for segmentation tasks. 
+      The final lost that used was weighted combination of DICE loss and BCE.
 
 **MRIDataCollection.py**
+    
     # This function extract DICOM files and create scan and segmentation pairs in dedicate folders
     
 **Main_Model.py**
+    
     # The mani engine for that work.
     # This function is the main function for trainig the model and get he results.
    
@@ -96,14 +100,14 @@ Runing function MRIDataCollection.py
     python Main_Model.py --challenge singlecoil --num-chans 16 --drop-prob 0.5 --data-path Data\ISPY1 --num-pools 5 --num-epoch 20 --batch-size 1 --exp-dir checkpoints
     
 ### Test the resuls
-* The results saved as Tensorboard files at --exp-dir
+* The results saved as Tensorboard files at `--exp-dir`
 * Luanching Tensorboard to see the results
 * Open browser and type the {HostIP}:{PORT}, Tensorboard should open and display the results
 
 **Example:**
+    
     tensorboard --logdir checkpoint --host {HostIP} --port {Port}
     
-
 1. Download the scans from: https://www.cancerimagingarchive.net/nbia-search/?CollectionCriteria=ISPY1. The scans are order chronoligicaly, needs to download only the erlier scan for each patient (Total 200 patients).Need to download specific files from each series, the files are:
 * Full scan
 * Scan with PE
