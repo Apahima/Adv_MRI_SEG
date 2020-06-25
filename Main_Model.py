@@ -4,6 +4,7 @@ import random
 import Common.Unet_Medical_Parse as UnetParser
 from Common.Unet_Medical_Parse import Args
 from Common.MedicalDataLoading import MedicalDataLoading
+from Common.Saving import save_model
 import torch
 import logging
 import os
@@ -245,27 +246,6 @@ def visualize(args, model, dataloaders, writer):
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
             dice = dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
             writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
-
-
-
-
-
-def save_model(args, exp_dir, model, optimizer, best_loss,folder_name):
-    torch.save(
-        {
-            'epoch': args.num_epochs,
-            'args': args,
-            'model': model.state_dict(),
-            'optimizer': optimizer.state_dict(),
-            'best_loss': best_loss,
-            'exp_dir': exp_dir
-        },
-        f=exp_dir / 'model.pt'
-    )
-
-    torch.save(model.state_dict(), os.path.join(args.exp_dir, folder_name, 'Model.pt'))
-    # if is_new_best:
-    #     shutil.copyfile(exp_dir / 'model.pt', exp_dir / 'best_model.pt')
 
 
 if __name__ == '__main__':
