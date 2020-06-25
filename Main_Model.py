@@ -223,6 +223,15 @@ def visualize(args, model, dataloaders, writer):
             timest = datetime.now().strftime("%I-%M-%S.%f")[:-3]
             plt.imsave(os.path.join(args.exp_dir,'{}-{}-{}.png'.format(tag,i,timest)), image, cmap='gray')
 
+    # def save_as_embbeded_seg(inputs,labels,pred):
+    #     emb_label = inputs.detach().numpy()
+    #     emb_pred = inputs.detach().numpy()
+    #     labels =labels.detach().numpy()
+    #     emb_label = np.dstack([emb_label,emb_label,emb_label])
+    #
+    #     emb_label[0,:,:][labels[0,:,:] > 0] = 255
+    #     emb_pred[pred] = [0,255,0]
+
     with torch.no_grad():
         inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
         inputs = inputs.to(args.device)
@@ -246,6 +255,8 @@ def visualize(args, model, dataloaders, writer):
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
             dice = dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
             writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
+
+            # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
 
 if __name__ == '__main__':
