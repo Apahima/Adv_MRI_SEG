@@ -7,3 +7,4 @@ Temp/
 *.log
 Test/
 checkpoints/
+*.png

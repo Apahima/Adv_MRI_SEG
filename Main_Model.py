@@ -108,7 +108,6 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
             # deep copy the model
             if phase == 'val' and epoch_loss < best_loss:
                 print("saving best model")
-                best_DICE_loss = metrics['dice']
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
 
@@ -126,7 +125,7 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
     # load best model weights
     model.load_state_dict(best_model_wts)
     save_model(args, args.exp_dir, model, optimizer, best_loss,folder_name)
-    return model, best_DICE_loss
+    return model
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -179,7 +178,7 @@ def main(args):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
     if args.eval != True:
-        model, best_DICE_loss = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, folder_name, num_epochs=args.num_epochs)
+        model = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, folder_name, num_epochs=args.num_epochs)
     else:
         model.load_state_dict(torch.load(os.path.join(args.exp_dir, args.eval_folder, 'Model.pt')))
 
@@ -255,9 +254,14 @@ def visualize(args, model, dataloaders, writer):
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
 
             #prediction binarization
-            pred = torch.where(pred > 2, 255 * torch.ones_like(pred), torch.zeros_like(pred))
+            PredBinarizationForDice = pred[Unified,:].unsqueeze(0)
+            PredBinarizationForDice -= PredBinarizationForDice.min()
+            PredBinarizationForDice /= PredBinarizationForDice.max()
+            PredBinarizationForDice = 255*PredBinarizationForDice
 
-            dice = 1 - dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
+            PredBinarizationForDice = torch.where(PredBinarizationForDice > 2, 255 * torch.ones_like(PredBinarizationForDice), torch.zeros_like(PredBinarizationForDice))
+
+            dice = 1 - dice_loss(PredBinarizationForDice, labels[Unified,:].unsqueeze(0))
             writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
