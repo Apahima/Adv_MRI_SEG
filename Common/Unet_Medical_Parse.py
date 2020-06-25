@@ -76,6 +76,12 @@ def create_arg_parser():
     parser.add_argument('--savetestfile', type=str,
                         help='Flag if you want to save evaluation images, Y - for saving')
 
+    ### Choose wether the model evaluate or not
+    parser.add_argument('--eval', type=bool, default=False,
+                        help='Flag as True if you already save the mpdel and would like to skip the trainig phase')
+    parser.add_argument('--eval-folder', type=pathlib.Path, default='checkpoints',
+                        help='Path where model and results should be loaded')
+
 
     # parser.add_argument('--data-split', choices=['val', 'test'], required=True,
     #                     help='Which data partition to run on: "val" or "test"')

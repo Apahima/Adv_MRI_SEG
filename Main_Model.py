@@ -56,7 +56,7 @@ def print_metrics(metrics, epoch_samples, phase):
     print("{}: {}".format(phase, ", ".join(outputs)))
 
 
-def train_model(model, optimizer, scheduler, dataloaders, args, writer, num_epochs=25):
+def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_name, num_epochs=25):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 1e10
 
@@ -124,7 +124,7 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, num_epoc
 
     # load best model weights
     model.load_state_dict(best_model_wts)
-    save_model(args, args.exp_dir, model, optimizer, best_loss)
+    save_model(args, args.exp_dir, model, optimizer, best_loss,folder_name)
     return model, best_DICE_loss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -132,14 +132,14 @@ print(device)
 
 
 def main(args):
-
     #Construct the summary:
     now = datetime.now()
-    construct_time_stamp = now.strftime("_%I-%M-%S %p")
+    construct_time_stamp = now.strftime("-%I-%M-%S-%p")
     Data_path = args.data_path
     folder_name = str(date.today()) + str(construct_time_stamp)
 
-    writer = SummaryWriter(log_dir=args.exp_dir / folder_name / 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
+    writer = SummaryWriter(log_dir=args.exp_dir / folder_name)
+    writer.add_text('Parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
 
     train_set, val_set, test_set = MedicalDataLoading(Data_path)
 
@@ -175,15 +175,16 @@ def main(args):
     summary(model, (1, 256, 256))
     # Observe that all parameters are being optimized
     optimizer_ft = build_optim(args, model.parameters())
-
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
-    model, best_DICE_loss = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, num_epochs=args.num_epochs)
+    if args.eval != True:
+        model, best_DICE_loss = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, folder_name, num_epochs=args.num_epochs)
+    else:
+        model.load_state_dict(torch.load(os.path.join(args.exp_dir, args.eval_folder, 'Model.pt')))
 
     model.eval()  # Set model to evaluate mode
 
     visualize(args, model, dataloaders, writer)
-
 
     ### Block for saving plot side by side
     inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
@@ -200,10 +201,6 @@ def main(args):
     MedicalImageShow.plot_side_by_side([inputs, labels, pred], args)
     ###
 
-    # writer.add_hparams({'lr': args.lr, 'BatchSize': args.batch_size},{'NumChan': args.num_chans , 'Pools': args.num_pools})
-    writer.add_hparams(
-        {'lr': args.lr, 'BatchSize': args.batch_size, 'NumChan': args.num_chans, 'Pools': args.num_pools},
-        {'DICE': best_DICE_loss})
     writer.close()
 
 def visualize(args, model, dataloaders, writer):
@@ -213,11 +210,11 @@ def visualize(args, model, dataloaders, writer):
         grid = torchvision.utils.make_grid(image, nrow=4, pad_value=1)
         writer.add_image(tag, grid)
 
-    def save_as_unified_grid(ScanLabelPred, tag):
+    def save_as_unified_grid(ScanLabelPred, tag, index):
         ScanLabelPred -= ScanLabelPred.min()
         ScanLabelPred /= ScanLabelPred.max()
         grid = torchvision.utils.make_grid(ScanLabelPred, nrow=3, pad_value=1)
-        writer.add_image(tag, grid)
+        writer.add_image(tag, grid, index)
 
     def save_image_as_file(image,tag,args):
         for i, image in enumerate(image):
@@ -225,7 +222,6 @@ def visualize(args, model, dataloaders, writer):
             timest = datetime.now().strftime("%I-%M-%S.%f")[:-3]
             plt.imsave(os.path.join(args.exp_dir,'{}-{}-{}.png'.format(tag,i,timest)), image, cmap='gray')
 
-    model.eval()
     with torch.no_grad():
         inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
         inputs = inputs.to(args.device)
@@ -246,7 +242,7 @@ def visualize(args, model, dataloaders, writer):
 
         for Unified, _ in enumerate(inputs):
             ScanLabelPred = torch.cat((inputs[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0),pred[Unified,:].unsqueeze(0)), dim=0)
-            save_as_unified_grid(ScanLabelPred, 'Unified Visualization')
+            save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
             dice = dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
             writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
 
@@ -254,7 +250,7 @@ def visualize(args, model, dataloaders, writer):
 
 
 
-def save_model(args, exp_dir, model, optimizer, best_loss):
+def save_model(args, exp_dir, model, optimizer, best_loss,folder_name):
     torch.save(
         {
             'epoch': args.num_epochs,
@@ -266,6 +262,8 @@ def save_model(args, exp_dir, model, optimizer, best_loss):
         },
         f=exp_dir / 'model.pt'
     )
+
+    torch.save(model.state_dict(), os.path.join(args.exp_dir, folder_name, 'Model.pt'))
     # if is_new_best:
     #     shutil.copyfile(exp_dir / 'model.pt', exp_dir / 'best_model.pt')
 
