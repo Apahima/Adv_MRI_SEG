@@ -107,6 +107,7 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, num_epoc
             # deep copy the model
             if phase == 'val' and epoch_loss < best_loss:
                 print("saving best model")
+                best_DICE_loss = metrics['dice']
                 best_loss = epoch_loss
                 best_model_wts = copy.deepcopy(model.state_dict())
 
@@ -124,7 +125,7 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, num_epoc
     # load best model weights
     model.load_state_dict(best_model_wts)
     save_model(args, args.exp_dir, model, optimizer, best_loss)
-    return model
+    return model, best_DICE_loss
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -177,7 +178,7 @@ def main(args):
 
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
-    model = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, num_epochs=args.num_epochs)
+    model, best_DICE_loss = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, num_epochs=args.num_epochs)
 
     model.eval()  # Set model to evaluate mode
 
@@ -197,8 +198,12 @@ def main(args):
     print('Number of scans to plot side by side:', pred.shape)
 
     MedicalImageShow.plot_side_by_side([inputs, labels, pred], args)
-
     ###
+
+    # writer.add_hparams({'lr': args.lr, 'BatchSize': args.batch_size},{'NumChan': args.num_chans , 'Pools': args.num_pools})
+    writer.add_hparams(
+        {'lr': args.lr, 'BatchSize': args.batch_size, 'NumChan': args.num_chans, 'Pools': args.num_pools},
+        {'DICE': best_DICE_loss})
     writer.close()
 
 def visualize(args, model, dataloaders, writer):
@@ -206,6 +211,12 @@ def visualize(args, model, dataloaders, writer):
         image -= image.min()
         image /= image.max()
         grid = torchvision.utils.make_grid(image, nrow=4, pad_value=1)
+        writer.add_image(tag, grid)
+
+    def save_as_unified_grid(ScanLabelPred, tag):
+        ScanLabelPred -= ScanLabelPred.min()
+        ScanLabelPred /= ScanLabelPred.max()
+        grid = torchvision.utils.make_grid(ScanLabelPred, nrow=3, pad_value=1)
         writer.add_image(tag, grid)
 
     def save_image_as_file(image,tag,args):
@@ -232,6 +243,14 @@ def visualize(args, model, dataloaders, writer):
             save_image_as_file(pred, 'Segmentation', args)
             save_image_as_file(inputs, 'Original Scan', args)
             print('Save Images DONE')
+
+        for Unified, _ in enumerate(inputs):
+            ScanLabelPred = torch.cat((inputs[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0),pred[Unified,:].unsqueeze(0)), dim=0)
+            save_as_unified_grid(ScanLabelPred, 'Unified Visualization')
+            dice = dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
+            writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
+
+
 
 
 
