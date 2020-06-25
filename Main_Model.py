@@ -253,7 +253,11 @@ def visualize(args, model, dataloaders, writer):
         for Unified, _ in enumerate(inputs):
             ScanLabelPred = torch.cat((inputs[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0),pred[Unified,:].unsqueeze(0)), dim=0)
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
-            dice = dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
+
+            #prediction binarization
+            pred = torch.where(pred > 2, 255 * torch.ones_like(pred), torch.zeros_like(pred))
+
+            dice = 1 - dice_loss(pred[Unified,:].unsqueeze(0), labels[Unified,:].unsqueeze(0))
             writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
