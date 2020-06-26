@@ -27,7 +27,7 @@ from torch.optim import lr_scheduler
 import time
 import copy
 import pathlib
-from Common import MedicalImageShow
+from Common import MedicalVisualization
 
 logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/Model_Debug.log')
 
@@ -184,7 +184,7 @@ def main(args):
 
     model.eval()  # Set model to evaluate mode
 
-    visualize(args, model, dataloaders, writer)
+    MedicalVisualization.visualize(args, model, dataloaders, writer)
 
     ### Block for saving plot side by side
     inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
@@ -198,73 +198,10 @@ def main(args):
     labels = labels.cpu().numpy()
     print('Number of scans to plot side by side:', pred.shape)
 
-    MedicalImageShow.plot_side_by_side([inputs, labels, pred], args)
+    MedicalVisualization.plot_side_by_side([inputs, labels, pred], args)
     ###
 
     writer.close()
-
-def visualize(args, model, dataloaders, writer):
-    def save_image_to_writer(image, tag):
-        image -= image.min()
-        image /= image.max()
-        grid = torchvision.utils.make_grid(image, nrow=4, pad_value=1)
-        writer.add_image(tag, grid)
-
-    def save_as_unified_grid(ScanLabelPred, tag, index):
-        ScanLabelPred -= ScanLabelPred.min()
-        ScanLabelPred /= ScanLabelPred.max()
-        grid = torchvision.utils.make_grid(ScanLabelPred, nrow=3, pad_value=1)
-        writer.add_image(tag, grid, index)
-
-    def save_image_as_file(image,tag,args):
-        for i, image in enumerate(image):
-            image = np.squeeze(image.cpu().numpy(), axis=0)
-            timest = datetime.now().strftime("%I-%M-%S.%f")[:-3]
-            plt.imsave(os.path.join(args.exp_dir,'{}-{}-{}.png'.format(tag,i,timest)), image, cmap='gray')
-
-    # def save_as_embbeded_seg(inputs,labels,pred):
-    #     emb_label = inputs.detach().numpy()
-    #     emb_pred = inputs.detach().numpy()
-    #     labels =labels.detach().numpy()
-    #     emb_label = np.dstack([emb_label,emb_label,emb_label])
-    #
-    #     emb_label[0,:,:][labels[0,:,:] > 0] = 255
-    #     emb_pred[pred] = [0,255,0]
-
-    with torch.no_grad():
-        inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
-        inputs = inputs.to(args.device)
-        labels = labels.to(args.device)
-
-        pred = model(inputs)
-
-        save_image_to_writer(labels, 'Ground Throuth Segmentation')
-        save_image_to_writer(pred, 'Segmentation')
-        save_image_to_writer(inputs, 'Original Scan')
-        print('Visualization DONE')
-
-        if args.savetestfile == 'Y':
-            save_image_as_file(labels, 'Ground Throuth Segmentation', args)
-            save_image_as_file(pred, 'Segmentation', args)
-            save_image_as_file(inputs, 'Original Scan', args)
-            print('Save Images DONE')
-
-        for Unified, _ in enumerate(inputs):
-            ScanLabelPred = torch.cat((inputs[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0),pred[Unified,:].unsqueeze(0)), dim=0)
-            save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
-
-            #prediction binarization
-            PredBinarizationForDice = pred[Unified,:].unsqueeze(0)
-            PredBinarizationForDice -= PredBinarizationForDice.min()
-            PredBinarizationForDice /= PredBinarizationForDice.max()
-            PredBinarizationForDice = 255*PredBinarizationForDice
-
-            PredBinarizationForDice = torch.where(PredBinarizationForDice > 2, 255 * torch.ones_like(PredBinarizationForDice), torch.zeros_like(PredBinarizationForDice))
-
-            dice = 1 - dice_loss(PredBinarizationForDice, labels[Unified,:].unsqueeze(0))
-            writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
-
-            # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
 
 if __name__ == '__main__':
