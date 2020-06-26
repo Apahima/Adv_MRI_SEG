@@ -33,15 +33,29 @@ Since the segmentation layers are full scan with tumor responds to neoadjuvant t
 The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get resonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess the segmentation layer were ready for training model.
 
 ### Model training:
-First the enitre data gather into pairs of scans and segmantation layer and then feed into U-net model with XXXX atructure.
-The best parameters were: XXXXX
+First the enitre data gather into pairs of scans and segmantation layer and then feed into U-net model.
+The best parameters were:
+
+    # --lr 0.001 --epochs 100 --droupout 0.5 --num-chans 32 --pools 5
+
 
 ### Results:
+
+* U-Net best configuration is: `--lr 0.001 --epochs 100 --droupout 0.5 --num-chans 32 --pools 5`
+* No significant improvement after 100 epochs. 
+* Scan with closed filled contours provide better result than open conturs
+* Dice values are reasonable for first order training model
+
+![Results1](Img/Results1.png)
 
 
 ### Conclusions:
 
-
+* Image pre-processing for scans & segmentation has critical effect for DL model results 
+* Medical imaging segmentation is not an easy task
+* By using combination of different loss function with the right weighting, the final results could improve significantly
+* As longer the model trained is not always the better way – (Epochs, Channels etc.)
+* Future work - Drill down with intensive pre-processing tools for masks creation and combination of complex loss functions
 
 ## Code Structure
 
