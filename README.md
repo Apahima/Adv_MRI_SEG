@@ -141,3 +141,6 @@ After download finished - runing function MRIDataCollection.py
 ISPY1 - 
 * https://wiki.cancerimagingarchive.net/display/Public/ISPY1
 * https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary
+
+Losses - 
+* https://github.com/Hsuxu/Loss_ToolBox-PyTorch
