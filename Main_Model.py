@@ -1,13 +1,25 @@
 import sys
 import numpy as np
 import random
+import torch
+import logging
+import os
+import time
+import copy
+
+from torchsummary import summary
+import torch.nn.functional as F
+import torch.optim as optim
+from torch.optim import lr_scheduler
+from torch.utils.data import DataLoader
+
+from collections import defaultdict
+
 import Common.Unet_Medical_Parse as UnetParser
 from Common.Unet_Medical_Parse import Args
 from Common.MedicalDataLoading import MedicalDataLoading
 from Common.Saving import save_model
-import torch
-import logging
-import os
+
 from datetime import datetime
 from datetime import date
 from tensorboardX import SummaryWriter
@@ -15,17 +27,11 @@ import torchvision
 import shutil
 import matplotlib.pyplot as plt
 
-
-from torch.utils.data import DataLoader
 from Models.Unet import Pytorch_Unet as pytorch_unet
-from torchsummary import summary
-import torch.nn.functional as F
-from collections import defaultdict
 from Models.Unet.Loss import dice_loss
-import torch.optim as optim
-from torch.optim import lr_scheduler
-import time
-import copy
+from Models.Losses.DiceLoss.dice_loss import WBCE_DiceLoss, BinaryDiceLoss,WBCEWithLogitLoss
+
+
 import pathlib
 from Common import MedicalVisualization
 
@@ -34,20 +40,19 @@ logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/Mod
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-def calc_loss(pred, target, metrics, bce_weight=0.5):
-    bce = F.binary_cross_entropy_with_logits(pred, target)
-
-    pred = F.sigmoid(pred)
-    dice = dice_loss(pred, target)
-
-    loss = bce * bce_weight + dice * (1 - bce_weight)
-
-    metrics['bce'] += bce.data.cpu().numpy() * target.size(0)
-    metrics['dice'] += dice.data.cpu().numpy() * target.size(0)
-    metrics['loss'] += loss.data.cpu().numpy() * target.size(0)
-
-    return loss
-
+# def calc_loss(pred, target, metrics, bce_weight=0.5):
+#     bce = F.binary_cross_entropy_with_logits(pred, target)
+#
+#     pred = F.sigmoid(pred)
+#     dice = dice_loss(pred, target)
+#
+#     loss = bce * bce_weight + dice * (1 - bce_weight)
+#
+#     metrics['bce'] += bce.data.cpu().numpy() * target.size(0)
+#     metrics['dice'] += dice.data.cpu().numpy() * target.size(0)
+#     metrics['loss'] += loss.data.cpu().numpy() * target.size(0)
+#
+#     return loss
 
 def print_metrics(metrics, epoch_samples, phase):
     outputs = []
@@ -60,6 +65,8 @@ def print_metrics(metrics, epoch_samples, phase):
 def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_name, num_epochs=25):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 1e10
+
+    criterion = WBCE_DiceLoss(alpha=0.5, reduction='mean')
 
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -92,7 +99,10 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
                 # track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model(inputs)
-                    loss = calc_loss(outputs, labels, metrics)
+
+                    loss = criterion(outputs, labels, metrics)
+                    # calc_loss(outputs, labels, metrics)
+                    # loss = calc_loss(outputs, labels, metrics)
 
                     # backward + optimize only if in training phase
                     if phase == 'train':

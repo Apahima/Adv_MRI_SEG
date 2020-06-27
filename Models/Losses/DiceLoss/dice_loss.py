@@ -188,24 +188,29 @@ class WBCE_DiceLoss(nn.Module):
         self.alpha = alpha
         self.ignore_index = ignore_index
         self.reduction = reduction
-        self.dice = BinaryDiceLoss(ignore_index=ignore_index, reduction=reduction, general=True)
+        self.dice = BinaryDiceLoss(ignore_index=ignore_index, reduction=reduction)
         self.wbce = WBCEWithLogitLoss(weight=weight, ignore_index=ignore_index, reduction=reduction)
         self.dice_loss = None
         self.wbce_loss = None
 
-    def forward(self, output, target):
+    def forward(self, output, target, metrics):
         self.dice_loss = self.dice(output, target)
         self.wbce_loss = self.wbce(output, target)
         loss = self.alpha * self.wbce_loss + self.dice_loss
+
+        metrics['bce'] += self.wbce_loss.data.cpu().numpy() * target.size(0)
+        metrics['dice'] += self.dice_loss.data.cpu().numpy() * target.size(0)
+        metrics['loss'] += loss.data.cpu().numpy() * target.size(0)
+
         return loss
 
 
 def test():
     input = torch.rand((3, 1, 32, 32, 32))
-    model = nn.Conv3d(1, 4, 3, padding=1)
-    target = torch.randint(0, 4, (3, 1, 32, 32, 32)).float()
-    target = make_one_hot(target, num_classes=4)
-    criterion = DiceLoss(ignore_index=[2,3], reduction='mean')
+    model = nn.Conv3d(1, 1, 3, padding=1)
+    target = torch.randint(0, 1, (3, 1, 32, 32, 32)).float()
+    # target = make_one_hot(target, num_classes=4)
+    criterion = WBCE_DiceLoss(alpha=0.5, reduction='mean')
     loss = criterion(model(input), target)
     loss.backward()
     print(loss.item())
