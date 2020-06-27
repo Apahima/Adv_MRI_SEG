@@ -208,7 +208,7 @@ def main(args):
     labels = labels.cpu().numpy()
     print('Number of scans to plot side by side:', pred.shape)
 
-    MedicalVisualization.plot_side_by_side([inputs, labels, pred], args)
+    #MedicalVisualization.plot_side_by_side([inputs, labels, pred], args)
     ###
 
     writer.close()

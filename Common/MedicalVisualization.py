@@ -5,6 +5,7 @@ import os
 import datetime
 import torch
 from Models.Unet.Loss import dice_loss
+from Models.Losses.DiceLoss.dice_loss import BinaryDiceLoss
 
 
 def plot_img_array(img_array, ncol=3):
@@ -56,12 +57,15 @@ def visualize(args, model, dataloaders, writer):
     #     emb_label[0,:,:][labels[0,:,:] > 0] = 255
     #     emb_pred[pred] = [0,255,0]
 
+    calculation_loss = BinaryDiceLoss() #Construct DICE loss calculations
+
     with torch.no_grad():
         inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
         inputs = inputs.to(args.device)
         labels = labels.to(args.device)
 
-        pred = model(inputs)
+        output = model(inputs)
+        pred = torch.sigmoid(output) #Scaling the output image to be (0,1)
 
         save_image_to_writer(labels, 'Ground Throuth Segmentation')
         save_image_to_writer(pred, 'Segmentation')
@@ -78,15 +82,7 @@ def visualize(args, model, dataloaders, writer):
             ScanLabelPred = torch.cat((inputs[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0),pred[Unified,:].unsqueeze(0)), dim=0)
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
 
-            #prediction binarization
-            PredBinarizationForDice = pred[Unified,:].unsqueeze(0)
-            PredBinarizationForDice -= PredBinarizationForDice.min()
-            PredBinarizationForDice /= PredBinarizationForDice.max()
-            PredBinarizationForDice = 255*PredBinarizationForDice
-
-            PredBinarizationForDice = torch.where(PredBinarizationForDice > 2, 255 * torch.ones_like(PredBinarizationForDice), torch.zeros_like(PredBinarizationForDice))
-
-            dice = 1 - dice_loss(PredBinarizationForDice, labels[Unified,:].unsqueeze(0))
+            dice = calculation_loss(pred[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0))
             writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
