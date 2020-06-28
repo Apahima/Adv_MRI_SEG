@@ -159,7 +159,7 @@ def main(args):
     folder_name = str(date.today()) + str(construct_time_stamp)
 
     writer = SummaryWriter(log_dir=args.exp_dir / folder_name)
-    writer.add_text('Parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
+    writer.add_text('Model parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
 
     train_set, val_set, test_set = MedicalDataLoading(Data_path)
 

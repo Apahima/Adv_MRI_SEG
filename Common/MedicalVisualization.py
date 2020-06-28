@@ -6,6 +6,7 @@ import datetime
 import torch
 from Models.Unet.Loss import dice_loss
 from Models.Losses.DiceLoss.dice_loss import BinaryDiceLoss
+from Common import Evaluations_Param as EvalP
 
 
 def plot_img_array(img_array, ncol=3):
@@ -83,7 +84,16 @@ def visualize(args, model, dataloaders, writer):
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
 
             dice = calculation_loss(pred[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0))
-            writer.add_text('Dice', 'Dice loss calculation: {}'.format(dice), Unified)
+
+            gt = labels[Unified,:].data.cpu().numpy() #the arguments should be w\0 batch index value [C,H,W]
+            prd = pred[Unified,:].data.cpu().numpy() #the arguments should be w\0 batch index value [C,H,W]
+            MSE = EvalP.mse(gt, prd)
+            NMSE = EvalP.nmse(gt, prd)
+            PSNR = EvalP.psnr(gt, prd)
+            SSIM = EvalP.ssim(gt, prd)
+
+            writer.add_text('Img Parameters:', 'Dice loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
+                                           '  \nPSNR: {:.3}  \nSSIM: {:.3}'.format(dice,MSE,NMSE,PSNR,SSIM), Unified)
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
