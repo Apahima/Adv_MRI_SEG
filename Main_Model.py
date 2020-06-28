@@ -30,6 +30,7 @@ import matplotlib.pyplot as plt
 from Models.Unet import Pytorch_Unet as pytorch_unet
 from Models.Unet.Loss import dice_loss
 from Models.Losses.DiceLoss.dice_loss import WBCE_DiceLoss, BinaryDiceLoss,WBCEWithLogitLoss
+from Models.Losses.TverskyLoss.binarytverskyloss import FocalBinaryTverskyLoss, BinaryTverskyLossV2
 
 
 import pathlib
@@ -66,7 +67,13 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 1e10
 
-    criterion = WBCE_DiceLoss(alpha=0.5, reduction='mean')
+    # criterion_WBCE_DiceLoss = WBCE_DiceLoss(alpha=args.WBCE_diceloss, reduction='mean')
+    # criterion_Tversky = BinaryTverskyLossV2(alpha=args.tversky_alpha, beta=args.tversky_beta)
+
+    if args.loss == 'WBCE_DiceLoss':
+        criterion = WBCE_DiceLoss(alpha=args.WBCE_diceloss, reduction='mean')
+    if args.loss == 'Tversky':
+        criterion = BinaryTverskyLossV2(alpha=args.tversky_alpha, beta=args.tversky_beta)
 
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -128,6 +135,9 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
         writer.add_scalar('BCE', metrics['bce'], epoch)
         writer.add_scalar('DICE', metrics['dice'], epoch)
         writer.add_scalar('LOSS', metrics['loss'], epoch)
+        writer.add_scalar('Dice Mean Similarity', metrics['Dice_Mean_Similarity'], epoch)
+        writer.add_scalar('Tversky', metrics['Tversky'], epoch)
+        writer.add_scalar('Tversky Mean Similarity', metrics['Tversky_Mean_Similarity'], epoch)
 
         print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val loss: {:4f}'.format(best_loss))

@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from TverskyLoss.binarytverskyloss import FocalBinaryTverskyLoss
-from TverskyLoss.multitverskyloss import MultiTverskyLoss
+from Models.Losses.TverskyLoss.binarytverskyloss import FocalBinaryTverskyLoss, BinaryTverskyLossV2
+from Models.Losses.TverskyLoss.multitverskyloss import MultiTverskyLoss
 
 
 class ConvNet(nn.Module):
@@ -33,7 +33,7 @@ class ConvNet(nn.Module):
 
 def test():
     in_channels = 1
-    n_classes = 5
+    n_classes = 1
     data = torch.rand(4, in_channels, 16, 64, 64)
     target = torch.randint(0, n_classes, size=(4, 1, 16, 64, 64)).long()
     net = ConvNet(in_channels, n_classes)
@@ -41,7 +41,7 @@ def test():
     for i in range(100):
         opt.zero_grad()
         out = net(data)
-        criterion = MultiTverskyLoss(0.7, 0.3)
+        criterion = BinaryTverskyLossV2(0.7, 0.3)
         loss = criterion(out, target)
         print(loss)
         loss.backward()

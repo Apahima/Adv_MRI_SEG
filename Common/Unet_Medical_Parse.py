@@ -82,6 +82,11 @@ def create_arg_parser():
     parser.add_argument('--eval-folder', type=pathlib.Path, default='checkpoints',
                         help='Path where model and results should be loaded')
 
+    ### Loss control
+    parser.add_argument('--loss', type=str, default='WBCE_DiceLoss', help='Which loss used')
+    parser.add_argument('--WBCE-diceloss', type=int, default=0.5, help='Weighted Binary Cross Entropy coefficient')
+    parser.add_argument('--tversky-alpha', type=int, default=0.3, help='Tversky Loss alpha coefficient')
+    parser.add_argument('--tversky-beta', type=int, default=0.7, help='Tversky Loss beta coefficient')
 
     # parser.add_argument('--data-split', choices=['val', 'test'], required=True,
     #                     help='Which data partition to run on: "val" or "test"')
