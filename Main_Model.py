@@ -158,8 +158,20 @@ def main(args):
     Data_path = args.data_path
     folder_name = str(date.today()) + str(construct_time_stamp)
 
+    #Document model parameter for later investigation
     writer = SummaryWriter(log_dir=args.exp_dir / folder_name)
-    writer.add_text('Model parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
+    # writer.add_text('Model parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools))
+    if args.loss == 'WBCE_DiceLoss':
+        writer.add_text('Model parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'
+                                            '  \nLoss function: {}'
+                                            '  \nDice Weight: {}'.format(args.num_chans, args.lr, args.num_epochs, args.num_pools, args.loss, args.WBCE_diceloss))
+    if args.loss == 'Tversky':
+        writer.add_text('Model parameters', 'Unet-Channels {}, --lr ={}, --epochs - {}, --Pools ={}'
+                                            '  \nLoss function: {}'
+                                            '  \nAlpha Coef: {}'
+                                            '  \nBeta Coef: {}'.format(args.num_chans, args.lr, args.num_epochs,
+                                                                       args.num_pools, args.loss, args.tversky_alpha, args.tversky_beta))
+
 
     train_set, val_set, test_set = MedicalDataLoading(Data_path)
 
