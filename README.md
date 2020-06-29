@@ -30,7 +30,9 @@ For more information:
 
 ### Data Pre-Processing:
 Since the segmentation layers are full scan with tumor responds to neoadjuvant treatment there are some scans w\o actual responds to reatment, i.e w\o segmentation. In additional, since the responds is non-uniform along the tumor, the scan has noise and holes that the pre-processing phase should deal with. 
-The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get resonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess the segmentation layer were ready for training model.
+The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get resonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess the segmentation layer were ready for training model. Pre-Processing show below:
+
+![PreProcessingExample](Img/PreProcessing1.png)
 
 ### Model training:
 First the enitre data gather into pairs of scans and segmantation layer and then feed into U-net model.
@@ -48,6 +50,7 @@ The best parameters were:
 
 ![Results1](Img/Results1.png)
 
+`Adding loss graphs and comperison between DICE and Tversky, Sweep Tversky and`
 
 ### Conclusions:
 
