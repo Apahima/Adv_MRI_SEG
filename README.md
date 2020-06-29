@@ -50,7 +50,7 @@ The best parameters were:
 
 ![Results1](Img/Results1.png)
 
-<font color="red"> Adding loss graphs and comperison between DICE and Tversky, Sweep Tversky and </font> 
+`Adding loss graphs and comperison between DICE and Tversky, Sweep Tversky and`
 
 ### Conclusions:
 
