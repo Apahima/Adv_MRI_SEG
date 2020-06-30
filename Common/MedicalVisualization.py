@@ -92,10 +92,23 @@ def visualize(args, model, dataloaders, writer):
             PSNR = EvalP.psnr(gt, prd)
             SSIM = EvalP.ssim(gt, prd)
 
-            writer.add_text('Img Parameters:', 'Dice loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
+            writer.add_text('Img Parameters - Test Phase:', 'Dice loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
                                            '  \nPSNR: {:.3}  \nSSIM: {:.3}'.format(dice,MSE,NMSE,PSNR,SSIM), Unified)
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
 
+
+def WriteToTensorboard(metrics, epoch_samples,writer,epoch):
+
+    for k in metrics.keys():
+        metrics[k] /= epoch_samples
+
+    # writing the results to TensorboardX
+    writer.add_scalar('BCE', metrics['bce'], epoch)
+    writer.add_scalar('DICE', metrics['dice'], epoch)
+    writer.add_scalar('LOSS', metrics['loss'], epoch)
+    writer.add_scalar('Dice Mean Similarity', 1-metrics['dice'], epoch)
+    writer.add_scalar('Tversky', metrics['Tversky'], epoch)
+    writer.add_scalar('Tversky Mean Similarity', 1-metrics['Tversky'], epoch)
 

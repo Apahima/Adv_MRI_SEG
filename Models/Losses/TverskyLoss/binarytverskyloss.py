@@ -152,5 +152,5 @@ class BinaryTverskyLossV2(nn.Module):
             loss = torch.mean(loss)
 
         metrics['Tversky'] += loss.data.cpu().numpy() * target.size(0)
-        metrics['Tversky_Mean_Similarity'] = 1. - loss.data.cpu().numpy()
+        # metrics['Tversky_Mean_Similarity'] = 1. - loss.data.cpu().numpy()
         return loss

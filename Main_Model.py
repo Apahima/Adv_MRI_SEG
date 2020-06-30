@@ -19,6 +19,7 @@ import Common.Unet_Medical_Parse as UnetParser
 from Common.Unet_Medical_Parse import Args
 from Common.MedicalDataLoading import MedicalDataLoading
 from Common.Saving import save_model
+from Common import MedicalVisualization
 
 from datetime import datetime
 from datetime import date
@@ -34,7 +35,7 @@ from Models.Losses.TverskyLoss.binarytverskyloss import FocalBinaryTverskyLoss, 
 
 
 import pathlib
-from Common import MedicalVisualization
+
 
 logging.basicConfig(level=logging.DEBUG,filemode='w', filename=os.getcwd()+'/Model_Debug.log')
 
@@ -117,7 +118,12 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
                         optimizer.step()
 
                 # statistics
-                epoch_samples += inputs.size(0)
+                epoch_samples += inputs.size(0) # I would like to summerized the entire samples in one epoch and devide the accumulate loss by the number of the samples.
+                                                # Actually I'm averaging the loss over the samples
+
+            if phase == 'train': #saving the Loss just for the traning phase
+                Towrite = metrics.copy()
+                MedicalVisualization.WriteToTensorboard(Towrite, epoch_samples, writer,epoch)
 
             print_metrics(metrics, epoch_samples, phase)
             epoch_loss = metrics['loss'] / epoch_samples
@@ -131,13 +137,13 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
 
         time_elapsed = time.time() - since
 
-        #writing the results to TensorboardX
-        writer.add_scalar('BCE', metrics['bce'], epoch)
-        writer.add_scalar('DICE', metrics['dice'], epoch)
-        writer.add_scalar('LOSS', metrics['loss'], epoch)
-        writer.add_scalar('Dice Mean Similarity', metrics['Dice_Mean_Similarity'], epoch)
-        writer.add_scalar('Tversky', metrics['Tversky'], epoch)
-        writer.add_scalar('Tversky Mean Similarity', metrics['Tversky_Mean_Similarity'], epoch)
+        # #writing the results to TensorboardX
+        # writer.add_scalar('BCE', metrics['bce'], epoch)
+        # writer.add_scalar('DICE', metrics['dice'], epoch)
+        # writer.add_scalar('LOSS', metrics['loss'], epoch)
+        # writer.add_scalar('Dice Mean Similarity', metrics['Dice_Mean_Similarity'], epoch)
+        # writer.add_scalar('Tversky', metrics['Tversky'], epoch)
+        # writer.add_scalar('Tversky Mean Similarity', metrics['Tversky_Mean_Similarity'], epoch)
 
         print('{:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
     print('Best val loss: {:4f}'.format(best_loss))
