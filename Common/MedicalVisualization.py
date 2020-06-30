@@ -30,7 +30,16 @@ def plot_side_by_side(img_arrays,args):
 
 
 
-def visualize(args, model, dataloaders, writer):
+def visualize(args, model, dataloaders,SegmentationLoss, writer):
+    """
+
+    :param args:
+    :param model:
+    :param dataloaders:
+    :param SegmentationLoss: Get loss function constructor, need to put only Output and Label (GT)
+    :param writer:
+    :return: None
+    """
     def save_image_to_writer(image, tag):
         image -= image.min()
         image /= image.max()
@@ -58,8 +67,6 @@ def visualize(args, model, dataloaders, writer):
     #     emb_label[0,:,:][labels[0,:,:] > 0] = 255
     #     emb_pred[pred] = [0,255,0]
 
-    calculation_loss = BinaryDiceLoss() #Construct DICE loss calculations
-
     with torch.no_grad():
         inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size
         inputs = inputs.to(args.device)
@@ -83,7 +90,7 @@ def visualize(args, model, dataloaders, writer):
             ScanLabelPred = torch.cat((inputs[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0),pred[Unified,:].unsqueeze(0)), dim=0)
             save_as_unified_grid(ScanLabelPred, 'Unified Visualization', Unified)
 
-            dice = calculation_loss(pred[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0))
+            loss = SegmentationLoss(pred[Unified,:].unsqueeze(0),labels[Unified,:].unsqueeze(0))
 
             gt = labels[Unified,:].data.cpu().numpy() #the arguments should be w\0 batch index value [C,H,W]
             prd = pred[Unified,:].data.cpu().numpy() #the arguments should be w\0 batch index value [C,H,W]
@@ -92,8 +99,8 @@ def visualize(args, model, dataloaders, writer):
             PSNR = EvalP.psnr(gt, prd)
             SSIM = EvalP.ssim(gt, prd)
 
-            writer.add_text('Img Parameters - Test Phase:', 'Dice loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
-                                           '  \nPSNR: {:.3}  \nSSIM: {:.3}'.format(dice,MSE,NMSE,PSNR,SSIM), Unified)
+            writer.add_text('Img Parameters - Test Phase:', '{} loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
+                                           '  \nPSNR: {:.3}  \nSSIM: {:.3}'.format(args.loss, loss,MSE,NMSE,PSNR,SSIM), Unified)
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
@@ -106,9 +113,9 @@ def WriteToTensorboard(metrics, epoch_samples,writer,epoch):
 
     # writing the results to TensorboardX
     writer.add_scalar('BCE', metrics['bce'], epoch)
-    writer.add_scalar('DICE', metrics['dice'], epoch)
-    writer.add_scalar('LOSS', metrics['loss'], epoch)
-    writer.add_scalar('Dice Mean Similarity', 1-metrics['dice'], epoch)
-    writer.add_scalar('Tversky', metrics['Tversky'], epoch)
-    writer.add_scalar('Tversky Mean Similarity', 1-metrics['Tversky'], epoch)
+    writer.add_scalar('Dice Loss', metrics['dice'], epoch)
+    writer.add_scalar('WBCE and DiceLoss', metrics['WBCE_DiceLoss'], epoch)
+    writer.add_scalar('Dice Similarity', 1-metrics['dice'], epoch)
+    writer.add_scalar('Tversky Loss', metrics['Tversky'], epoch)
+    writer.add_scalar('Tversky Similarity', 1-metrics['Tversky'], epoch)
 

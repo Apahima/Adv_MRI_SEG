@@ -124,7 +124,7 @@ class BinaryTverskyLossV2(nn.Module):
             self.beta = self.beta / s
             self.alpha = self.alpha / s
 
-    def forward(self, output, target, metrics):
+    def forward(self, output, target, *args):
         batch_size = output.size(0)
 
         if self.ignore_index is not None:
@@ -151,6 +151,6 @@ class BinaryTverskyLossV2(nn.Module):
         else:
             loss = torch.mean(loss)
 
-        metrics['Tversky'] += loss.data.cpu().numpy() * target.size(0)
+        # metrics['Tversky'] += loss.data.cpu().numpy() * target.size(0)
         # metrics['Tversky_Mean_Similarity'] = 1. - loss.data.cpu().numpy()
         return loss

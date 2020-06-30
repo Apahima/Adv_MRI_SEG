@@ -64,17 +64,14 @@ def print_metrics(metrics, epoch_samples, phase):
     print("{}: {}".format(phase, ", ".join(outputs)))
 
 
-def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_name, num_epochs=25):
+def train_model(model, optimizer, scheduler, dataloaders, args, criterion, writer, folder_name, num_epochs=25):
     best_model_wts = copy.deepcopy(model.state_dict())
     best_loss = 1e10
 
     # criterion_WBCE_DiceLoss = WBCE_DiceLoss(alpha=args.WBCE_diceloss, reduction='mean')
     # criterion_Tversky = BinaryTverskyLossV2(alpha=args.tversky_alpha, beta=args.tversky_beta)
 
-    if args.loss == 'WBCE_DiceLoss':
-        criterion = WBCE_DiceLoss(alpha=args.WBCE_diceloss, reduction='mean')
-    if args.loss == 'Tversky':
-        criterion = BinaryTverskyLossV2(alpha=args.tversky_alpha, beta=args.tversky_beta)
+
 
     for epoch in range(num_epochs):
         print('Epoch {}/{}'.format(epoch, num_epochs - 1))
@@ -109,6 +106,7 @@ def train_model(model, optimizer, scheduler, dataloaders, args, writer, folder_n
                     outputs = model(inputs)
 
                     loss = criterion(outputs, labels, metrics)
+                    metrics[args.loss] += loss.data.cpu().numpy() * labels.size(0)
                     # calc_loss(outputs, labels, metrics)
                     # loss = calc_loss(outputs, labels, metrics)
 
@@ -196,6 +194,11 @@ def main(args):
     }
     print('Dataset size', dataset_sizes)
 
+    if args.loss == 'WBCE_DiceLoss':
+        criterion = WBCE_DiceLoss(alpha=args.WBCE_diceloss, reduction='mean')
+    if args.loss == 'Tversky':
+        criterion = BinaryTverskyLossV2(alpha=args.tversky_alpha, beta=args.tversky_beta)
+
     def build_optim(args, params):
         optimizer = optim.Adam(params, args.lr)
         return optimizer
@@ -216,13 +219,19 @@ def main(args):
     exp_lr_scheduler = lr_scheduler.StepLR(optimizer_ft, step_size=25, gamma=0.1)
 
     if args.eval != True:
-        model = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args, writer, folder_name, num_epochs=args.num_epochs)
+        model = train_model(model, optimizer_ft, exp_lr_scheduler, dataloaders, args,criterion, writer, folder_name, num_epochs=args.num_epochs)
     else:
         model.load_state_dict(torch.load(os.path.join(args.exp_dir, args.eval_folder, 'Model.pt')))
 
     model.eval()  # Set model to evaluate mode
 
-    MedicalVisualization.visualize(args, model, dataloaders, writer)
+    ### Prepare for visualization
+    if args.loss == 'WBCE_DiceLoss':
+        SegmentationLoss = BinaryDiceLoss()
+    if args.loss == 'Tversky':
+        SegmentationLoss = criterion
+
+    MedicalVisualization.visualize(args, model, dataloaders,SegmentationLoss, writer)
 
     ### Block for saving plot side by side
     inputs, labels = next(iter(dataloaders['test']))  # next(iter()) gives batch of images from dataloader with size of actual batch size

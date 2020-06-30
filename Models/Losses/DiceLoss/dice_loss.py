@@ -200,7 +200,7 @@ class WBCE_DiceLoss(nn.Module):
 
         metrics['bce'] += self.wbce_loss.data.cpu().numpy() * target.size(0)
         metrics['dice'] += self.dice_loss.data.cpu().numpy() * target.size(0)
-        metrics['loss'] += loss.data.cpu().numpy() * target.size(0)
+        # metrics['loss'] += loss.data.cpu().numpy() * target.size(0)
         # metrics['Dice_Mean_Similarity'] = 1. - self.dice_loss.data.cpu().numpy()
 
         return loss
