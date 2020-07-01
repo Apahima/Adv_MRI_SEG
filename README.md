@@ -91,12 +91,14 @@ Summary:
 
 **U-Net network**
 
-    # U-net network implement as integrated part of overall algorithm with some modification for raw-data properties
+    # U-net network implement as integrated part of overall algorithm
+      with some modification for raw-data properties
     # Refernce for U-Net can be seen at: https://github.com/zhixuhao/unet.git
     
 **Loss funtions**
     
-    # The work focused on the effect of choosing the right loss function with respect to high convergence and light-weight model
+    # The work focused on the effect of choosing the right loss function 
+      with respect to high convergence and light-weight model
     # Several loss functions where used for segmentation tasks. 
     # The best loss function choose as loss that converge faster and provide highly segmentation results
 
