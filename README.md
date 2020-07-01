@@ -36,29 +36,54 @@ The preprocessing tool include scans dynamic range exclusion and morphological o
 
 ### Model training:
 First the enitre data gather into pairs of scans and segmantation layer and then feed into U-net model.
-The best parameters were:
+The model ran with a lot of architectures configurations like below:
 
     # --lr 0.001 --epochs 100 --droupout 0.5 --num-chans 32 --pools 5
 
 
 ### Results:
 
-* U-Net best configuration is: `--lr 0.001 --epochs 100 --droupout 0.5 --num-chans 32 --pools 5`
-* No significant improvement after 100 epochs. 
-* Scan with closed filled contours provide better result than open conturs
+First U-net model ran with different architectures to find the best model architecture for the specific database.
+Configuration of `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5` achive the best results with WBCE coefficient of 0.5 plus Dice loss
+
+![0.5WBCE_Dice](Img/0.5WBCE_Dice.png)
+
+After finding the best architecture the model tests with several WBCE loss coefficient. As expected no improvment within the loss function since WBCE coefficient is just multiplication coefficiant that shoudn't impact gradient steps optimization.
+
+![WBCELoss](Img/WBCELossSweep.png)
+
+The second tested loss function was Tversky Loss. Several optimization done with different Tversky coefficient combinations.
+The results below shown that `Tversky Loss with Alpha = 0.2, Beta = 0.7` provide the best results
+
+![TverskyLoss](Img/TverskyLossSweep.png)
+
+Finally Dice loss and Tversky loss compare to find which loss is the best loss for the proposed model architecture, Dice loss was the best one.
+
+![BestDiceVsBestTversky](Img/BestDiceVsBestTversky.png)
+
+Summary:
+* U-Net best configuration is: `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5 --loss Dice --WBCE-diceloss 0.5`
+* No significant improvement after 1000 epochs. 
+* Both Tversky and Dice loss combination ran with 100 epochs only to save computational time but understanding loss trend.
+* Scan with closed filled contours provide better result than open contours
 * Dice values are reasonable for first order training model
 
 ![Results1](Img/Results1.png)
 
-`Adding loss graphs and comperison between DICE and Tversky, Sweep Tversky and`
+![DifferentDiceResults](Img/DifferentDiceResults.png)
+![DifferentTverskyResults](Img/DifferentTverskyResults.png)
+
+`present the same pictures with Dice and Tversky and the image parameters such as SSIM....`
 
 ### Conclusions:
 
 * Image pre-processing for scans & segmentation has critical effect for DL model results 
 * Medical imaging segmentation is not an easy task
 * By using combination of different loss function with the right weighting, the final results could improve significantly
-* As longer the model trained is not always the better way – (Epochs, Channels etc.)
-* Future work - Drill down with intensive pre-processing tools for masks creation and combination of complex loss functions
+* Sometimes heavy model with large computational time is not always the right way to get the best results. Loss function could converge the model faster and be more sophisticated.
+* Future work - 
+    * Drill down with intensive pre-processing tools for masks creation and combination of complex loss functions
+    * Try to implement Un-Supervised model with Momford-Shah Loss
 
 ## Code Structure
 
@@ -71,8 +96,9 @@ The best parameters were:
     
 **Loss funtions**
     
+    # The work focused on the effect of choosing the right loss function with respect to high convergence and light-weight model
     # Several loss functions where used for segmentation tasks. 
-      The final lost that used was weighted combination of DICE loss and BCE.
+    # The best loss function choose as loss that converge faster and provide highly segmentation results
 
 **MRIDataCollection.py**
     
@@ -113,6 +139,10 @@ After download finished - runing function MRIDataCollection.py
     * `--data-path` - Define the folder where Image and Mask folders located
     * `--batch-size` - Define batch size
     * `--lr` - Define Learning rate
+    * `--loss` - Define which Loss function to use - Tversky ot WBCE_DiceLoss
+        * `--WBCE-diceloss` - Define the coefficient of Dice loss at overall loss function
+        * `--tversky-alpha` - Define Tversky Alpha coefficient
+        * `--tversky-beta` - Defince Tversky Beta coefficient
     * `--exp-dir` - Define where to save Model results to be able to visualize that with TensorBoard.
 
 **Example:**
