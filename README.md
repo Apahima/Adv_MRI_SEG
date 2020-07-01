@@ -46,7 +46,7 @@ The model ran with a lot of architectures configurations like below:
 First U-net model ran with different architectures to find the best model architecture for the specific database.
 Configuration of `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5` achive the best results with WBCE coefficient of 0.5 plus Dice loss
 
-![0.5WBCE_Dice](Img/0.5WBCE_Dice.png)
+![0.5WBCEDice](Img/0.5WBCEDice.png)
 
 After finding the best architecture the model tests with several WBCE loss coefficient. As expected no improvment within the loss function since WBCE coefficient is just multiplication coefficiant that shoudn't impact gradient steps optimization.
 
