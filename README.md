@@ -59,7 +59,7 @@ The results below shown that `Tversky Loss with Alpha = 0.1, Beta = 0.9` provide
 
 Finally Dice loss and Tversky loss compare to find which loss is the best loss for the proposed model architecture, Tversky loss was the best one.
 
-<img style="float: center;" src="Img/BestDiceVsBestTversky.png">
+<div div style="text-align:center"><img src="Img/BestDiceVsBestTversky.png" /></div> 
 
 <!--
 ![BestDiceVsBestTversky](Img/BestDiceVsBestTversky.png)
