@@ -53,20 +53,20 @@ After finding the best architecture the model tests with several WBCE loss coeff
 ![WBCELoss](Img/WBCELossSweep.png)
 
 The second tested loss function was Tversky Loss. Several optimization done with different Tversky coefficient combinations.
-The results below shown that `Tversky Loss with Alpha = 0.2, Beta = 0.7` provide the best results
+The results below shown that `Tversky Loss with Alpha = 0.1, Beta = 0.9` provide the best results. The results meaning that the loss penalizing more sensitive for False-Negative error. 
 
 ![TverskyLoss](Img/TverskyLossSweep.png)
 
-Finally Dice loss and Tversky loss compare to find which loss is the best loss for the proposed model architecture, Dice loss was the best one.
+Finally Dice loss and Tversky loss compare to find which loss is the best loss for the proposed model architecture, Tversky loss was the best one.
 
 ![BestDiceVsBestTversky](Img/BestDiceVsBestTversky.png)
 
 Summary:
-* U-Net best configuration is: `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5 --loss Dice --WBCE-diceloss 0.5`
+* U-Net best configuration is: `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5 --loss Tversky --tversky-alpha 0.1 –tversky-beta 0.9`
 * No significant improvement after 1000 epochs. 
-* Both Tversky and Dice loss combination ran with 100 epochs only to save computational time but understanding loss trend.
+* Both Tversky and Dice loss combination ran with 50 epochs to understanding loss trends and save computational time
 * Scan with closed filled contours provide better result than open contours
-* Dice values are reasonable for first order training model
+* Dice \ Tversky values are reasonable for first order training model
 
 ![Results1](Img/Results1.png)
 
