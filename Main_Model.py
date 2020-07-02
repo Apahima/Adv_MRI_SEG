@@ -124,7 +124,7 @@ def train_model(model, optimizer, scheduler, dataloaders, args, criterion, write
                 MedicalVisualization.WriteToTensorboard(Towrite, epoch_samples, writer,epoch)
 
             print_metrics(metrics, epoch_samples, phase)
-            epoch_loss = metrics['loss'] / epoch_samples
+            epoch_loss = metrics[args.loss] / epoch_samples
 
             # deep copy the model
             if phase == 'val' and epoch_loss < best_loss:

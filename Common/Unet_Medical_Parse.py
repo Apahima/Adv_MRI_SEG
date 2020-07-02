@@ -83,7 +83,7 @@ def create_arg_parser():
                         help='Path where model and results should be loaded')
 
     ### Loss control
-    parser.add_argument('--loss', type=str, default='WBCE_DiceLoss', help='Which loss used')
+    parser.add_argument('--loss', type=str, default='WBCE_DiceLoss', help='Which loss used Tversky or WBCE_DiceLoss')
     parser.add_argument('--WBCE-diceloss', type=float, default=0.5, help='Weighted Binary Cross Entropy coefficient')
     parser.add_argument('--tversky-alpha', type=float, default=0.3, help='Tversky Loss alpha coefficient')
     parser.add_argument('--tversky-beta', type=float, default=0.7, help='Tversky Loss beta coefficient')
