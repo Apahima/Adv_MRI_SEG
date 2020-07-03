@@ -55,11 +55,22 @@ After finding the best architecture the model tests with several WBCE loss coeff
 The second tested loss function was Tversky Loss. Several optimization done with different Tversky coefficient combinations.
 The results below shown that `Tversky Loss with Alpha = 0.1, Beta = 0.9` provide the best results. The results meaning that the loss penalizing more sensitive for False-Negative error. 
 
+<!--
 ![TverskyLoss](Img/TverskyLossSweep.png)
+-->
+<p align="center">
+  <img src="Img/TverskyLossSweep.png" width="350" title="hover text">
+</p>
 
 Finally Dice loss and Tversky loss compare to find which loss is the best loss for the proposed model architecture, Tversky loss was the best one.
 
+<p align="center">
+  <img src="Img/BestDiceVsBestTversky.png" width="700" title="hover text">
+</p>
+
+<!--
 ![BestDiceVsBestTversky](Img/BestDiceVsBestTversky.png)
+-->
 
 Summary:
 * U-Net best configuration is: `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5 --loss Tversky --tversky-alpha 0.1 –tversky-beta 0.9`
