@@ -9,33 +9,33 @@ MRI exams were performed within four weeks prior to starting anthracycline-cyclo
 
 ![Scan Series ISPY1](Img/Fig1.png)
 
-The main porpuse of the works is to create ML tool that could take women breast scan and segment the tumor area with highly precision. For developing such tool first scans (T1, MRI) were taken as database and U-net model choose and trained with verious structure and loss functions.
+The main purpose of the works is to create ML tool that could take women breast scan and segment the tumor area with highly precision. For developing such tool first scans (T1, MRI) were taken as database and U-net model choose and trained with various structure and loss functions.
 
 ### Database:
-Each series contain diffferent scans, for that specific work the scans that were used is:
+Each series contain different scans, for that specific work the scans that were used is:
 * Full scan
 * Scan with PE
 * Scan with SER
 * Breast Tissue Segmentation 
 
-Full scan - contatin full breast scan without segmentation layer.
-PE scan - contain tumor responds to neoadjuvant treatment, i.e tumor segmentation
-SER scan - contain tumor responds to neoadjuvant treatment, i.e tumor segmentation
-Breast tissue segmentation contatin 3D cordinate of the segmantation box.
+Full scan - contain full breast scan without segmentation layer.
+PE scan - contain tumor responds to neoadjuvant treatment, i.e. tumor segmentation
+SER scan - contain tumor responds to neoadjuvant treatment, i.e. tumor segmentation
+Breast tissue segmentation contain 3D coordinate of the segmentation box.
 
-Note: PE and SER are different contast enhancement technique.
+Note: PE and SER are different contrast enhancement technique.
 
 For more information:
 <a href="https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary" target="_blank">`https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary`</a>
 
 ### Data Pre-Processing:
-Since the segmentation layers are full scan with tumor responds to neoadjuvant treatment there are some scans w\o actual responds to reatment, i.e w\o segmentation. In additional, since the responds is non-uniform along the tumor, the scan has noise and holes that the pre-processing phase should deal with. 
-The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get resonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess the segmentation layer were ready for training model. Pre-Processing show below:
+Since the segmentation layers are full scan with tumor responds to neoadjuvant treatment there are some scans w\o actual responds to treatment, i.e. w\o segmentation. In additional, since the responds is non-uniform along the tumor, the scan has noise and holes that the pre-processing phase should deal with. 
+The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get reasonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess the segmentation layer were ready for training model. Pre-Processing show below:
 
 ![PreProcessingExample](Img/PreProcessing1.png)
 
 ### Model training:
-First the enitre data gather into pairs of scans and segmantation layer and then feed into U-net model.
+First the entire data gather into pairs of scans and segmentation layer and then feed into U-net model.
 The model ran with a lot of architectures configurations like below:
 
     # --lr 0.001 --epochs 100 --droupout 0.5 --num-chans 32 --pools 5
@@ -44,11 +44,11 @@ The model ran with a lot of architectures configurations like below:
 ### Results:
 
 First U-net model ran with different architectures to find the best model architecture for the specific database.
-Configuration of `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5` achive the best results with WBCE coefficient of 0.5 plus Dice loss
+Configuration of `--lr 0.001 --epochs 1000 --droupout 0.5 --num-chans 64 --pools 5` achieve the best results with WBCE coefficient of 0.5 plus Dice loss
 
 ![0.5WBCEDice](Img/0.5WBCEDice.png)
 
-After finding the best architecture the model tests with several WBCE loss coefficient. As expected no improvment within the loss function since WBCE coefficient is just multiplication coefficiant that shoudn't impact gradient steps optimization.
+After finding the best architecture the model tests with several WBCE loss coefficient. As expected, no improvement within the loss function since WBCE coefficient is just multiplication coefficient that shouldn’t impact gradient steps optimization.
 
 ![WBCELoss](Img/WBCELossSweep.png)
 
@@ -92,9 +92,9 @@ Summary:
 
     # U-net network implement as integrated part of overall algorithm
       with some modification for raw-data properties
-    # Refernce for U-Net can be seen at: https://github.com/zhixuhao/unet.git
+    # Reference for U-Net can be seen at: https://github.com/zhixuhao/unet.git
     
-**Loss funtions**
+**Loss functions**
     
     # The work focused on the effect of choosing the right loss function 
       with respect to high convergence and light-weight model
@@ -121,13 +121,13 @@ This code depends on the following libraries:
 * TensorboardX
 * PyDicom 
 
-### PreRequsite
+### Prerequisite
 Prior to running the model, the raw files (First scan of each patient) should be download to folder {WorkingDirectory}\ISPY1
-After download finished - runing function MRIDataCollection.py
+After download finished - running function MRIDataCollection.py
 * Parameters:
     * `--data-path` - Where the raw data is located
-    * `--mask-path` - Where to save the segmenations after the PreProcessing phase
-    * `--image-path` - Where to save the scans that correllate to segmenations slices.
+    * `--mask-path` - Where to save the segmentations after the PreProcessing phase
+    * `--image-path` - Where to save the scans that correlate to segmentations slices.
     
 **Example:**
 
@@ -143,23 +143,23 @@ After download finished - runing function MRIDataCollection.py
     * `--loss` - Define which Loss function to use - Tversky ot WBCE_DiceLoss
         * `--WBCE-diceloss` - Define the coefficient of Dice loss at overall loss function
         * `--tversky-alpha` - Define Tversky Alpha coefficient
-        * `--tversky-beta` - Defince Tversky Beta coefficient
+        * `--tversky-beta` - Define Tversky Beta coefficient
     * `--exp-dir` - Define where to save Model results to be able to visualize that with TensorBoard.
 
 **Example:**
 
     python Main_Model.py --challenge singlecoil --num-chans 16 --drop-prob 0.5 --data-path Data\ISPY1 --num-pools 5 --num-epoch 20 --batch-size 1 --exp-dir checkpoints
     
-### Test the resuls
+### Test the results
 * The results saved as Tensorboard files at `--exp-dir`
-* Luanching Tensorboard to see the results
+* Launching Tensorboard to see the results
 * Open browser and type the {HostIP}:{PORT}, Tensorboard should open and display the results
 
 **Example:**
     
     tensorboard --logdir checkpoint --host {HostIP} --port {Port}
 <!--    
-1. Download the scans from: https://www.cancerimagingarchive.net/nbia-search/?CollectionCriteria=ISPY1. The scans are order chronoligicaly, needs to download only the erlier scan for each patient (Total 200 patients).Need to download specific files from each series, the files are:
+1. Download the scans from: https://www.cancerimagingarchive.net/nbia-search/?CollectionCriteria=ISPY1. The scans are order chronologically, needs to download only the earlier  scan for each patient (Total 200 patients).Need to download specific files from each series, the files are:
 * Full scan
 * Scan with PE
 * Scan with SER
@@ -171,7 +171,7 @@ After download finished - runing function MRIDataCollection.py
     python Main_Model.py --
 -->
     
-## Refrences:
+## References:
 ISPY1 - 
 * https://wiki.cancerimagingarchive.net/display/Public/ISPY1
 * https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary
