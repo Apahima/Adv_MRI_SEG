@@ -91,7 +91,7 @@ Summary:
 * Medical imaging segmentation is not an easy task
 * By using combination of different loss function with the right weighting, the final results could improve significantly
 * Sometimes heavy model with costly computational time is not the right way to get the best results. 
-  Loss function could converge the model faster by choosing the right loss family to the reight task.
+  Loss function could converge the model faster by choosing the right loss family to the right task.
 * Future work - 
     * Drill down with intensive pre-processing tools for masks creation and combination of complex loss functions
     * Try to implement Un-Supervised model with Momford-Shah Loss
