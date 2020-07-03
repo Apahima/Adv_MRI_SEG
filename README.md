@@ -2,14 +2,14 @@
 
 Breast cancer is the second leading cause of death for women all over the world. Since the cause of the disease remains unknown, early diagnosis is the key for breast cancer control, and it can increase the success of treatment, save lives and reduce costs.
 
-The work focus on Investigation of Serial Studies to Predict Your Therapeutic Response with Imaging and moLecular Analysis (I-SPY TRIAL) breast cancer trial, a study of imaging and tissue-based biomarkers for predicting pathologic complete response (pCR) and recurrence-free survival (RFS).
+The work based on Investigation of Serial Studies to Predict Your Therapeutic Response with Imaging and moLecular Analysis (I-SPY TRIAL) breast cancer trial, a study of imaging and tissue-based biomarkers for predicting pathologic complete response (pCR) and recurrence-free survival (RFS).
 
 ISPY1 dataset includes 230 studies with T3 tumors measuring at least 3 cm in diameter by clinical exam or imaging.
 MRI exams were performed within four weeks prior to starting anthracycline-cyclophosphamide chemotherapy (T1, MRI1), at least 2 weeks after the first cycle of AC and prior to the second cycle of AC (T2, MRI2), between anthracycline-cyclophosphamide treatment and taxane therapy if taxane was administered (T3, MRI3), and after the final chemotherapy treatment and prior to surgery (T4, MRI4). The study schema is shown below.
 
 ![Scan Series ISPY1](Img/Fig1.png)
 
-The main purpose of the works is to create ML tool that could take women breast scan and segment the tumor area with highly precision. For developing such tool first scans (T1, MRI) were taken as database and U-net model choose and trained with various structure and loss functions.
+The main purpose of the works is to create DL based tool that could take women breast scans and segment the tumor area with highly precision. For developing such tool first scans (T1, MRI) were taken as database and U-net model choose and trained with various structure and loss functions.
 
 ### Database:
 Each series contain different scans, for that specific work the scans that were used is:
@@ -18,10 +18,10 @@ Each series contain different scans, for that specific work the scans that were 
 * Scan with SER
 * Breast Tissue Segmentation 
 
-Full scan - contain full breast scan without segmentation layer.
-PE scan - contain tumor responds to neoadjuvant treatment, i.e. tumor segmentation
-SER scan - contain tumor responds to neoadjuvant treatment, i.e. tumor segmentation
-Breast tissue segmentation contain 3D coordinate of the segmentation box.
+Full scan - contain full breast scan without segmentation layer.  
+PE scan - contain tumor responds to neoadjuvant treatment, i.e. tumor segmentation  
+SER scan - contain tumor responds to neoadjuvant treatment, i.e. tumor segmentation  
+Breast tissue segmentation contain 3D coordinate of the segmentation box.  
 
 Note: PE and SER are different contrast enhancement technique.
 
@@ -29,8 +29,8 @@ For more information:
 <a href="https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary" target="_blank">`https://wiki.cancerimagingarchive.net/display/Public/I+SPY-1+DCE+MRI+Data+Sharing+DICOM+Dictionary`</a>
 
 ### Data Pre-Processing:
-Since the segmentation layers are full scan with tumor responds to neoadjuvant treatment there are some scans w\o actual responds to treatment, i.e. w\o segmentation. In additional, since the responds is non-uniform along the tumor, the scan has noise and holes that the pre-processing phase should deal with. 
-The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get reasonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess the segmentation layer were ready for training model. Pre-Processing show below:
+Since the segmentation layers are full scan with tumor responds to neoadjuvant treatment there are some scans w\o actual responds to treatment, i.e. w\o segmentation. In additional, since the responds is non-uniform along the tumor, the scan has noise and background problems that needs pre-processing attention. 
+The preprocessing tool include scans dynamic range exclusion and morphological operations. The dynamic range is Max. & Min. for the entire series. The morphological operation that used to eliminate noise and get reasonable segmentation is OPEN with binary threshold of about 10%. All that is for reducing image noise and close segmentation areas - we assume the tumor have continuity. After the preprocess, the segmentation layer is ready for training. Pre-Processing show below:
 
 ![PreProcessingExample](Img/PreProcessing1.png)
 
@@ -53,7 +53,7 @@ After finding the best architecture the model tests with several WBCE loss coeff
 ![WBCELoss](Img/WBCELossSweep.png)
 
 The second tested loss function was Tversky Loss. Several optimization done with different Tversky coefficient combinations.
-The results below shown that `Tversky Loss with Alpha = 0.1, Beta = 0.9` provide the best results. The results meaning that the loss penalizing more sensitive for False-Negative error. 
+The results below shown that `Tversky Loss with Alpha = 0.1, Beta = 0.9` provide the best results. The results meaning that the loss penalizing more sensitive to False-Negative error. 
 
 <!--
 ![TverskyLoss](Img/TverskyLossSweep.png)
@@ -90,7 +90,8 @@ Summary:
 * Image pre-processing for scans & segmentation has critical effect for DL model results 
 * Medical imaging segmentation is not an easy task
 * By using combination of different loss function with the right weighting, the final results could improve significantly
-* Sometimes heavy model with large computational time is not always the right way to get the best results. Loss function could converge the model faster and be more sophisticated.
+* Sometimes heavy model with costly computational time is not the right way to get the best results. 
+  Loss function could converge the model faster by choosing the right loss family to the reight task.
 * Future work - 
     * Drill down with intensive pre-processing tools for masks creation and combination of complex loss functions
     * Try to implement Un-Supervised model with Momford-Shah Loss
@@ -110,7 +111,7 @@ Summary:
     # The work focused on the effect of choosing the right loss function 
       with respect to high convergence and light-weight model
     # Several loss functions where used for segmentation tasks. 
-    # The best loss function choose as loss that converge faster and provide highly segmentation results
+    # The best loss function choose such that converge faster and provide highly segmentation results
 
 **MRIDataCollection.py**
     
@@ -135,6 +136,9 @@ This code depends on the following libraries:
 ### Prerequisite
 Prior to running the model, the raw files (First scan of each patient) should be download to folder {WorkingDirectory}\ISPY1
 After download finished - running function MRIDataCollection.py
+
+Link to data library for download: https://www.cancerimagingarchive.net/nbia-search/?CollectionCriteria=ISPY1
+
 * Parameters:
     * `--data-path` - Where the raw data is located
     * `--mask-path` - Where to save the segmentations after the PreProcessing phase
