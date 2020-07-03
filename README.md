@@ -59,13 +59,13 @@ The results below shown that `Tversky Loss with Alpha = 0.1, Beta = 0.9` provide
 ![TverskyLoss](Img/TverskyLossSweep.png)
 -->
 <p align="center">
-  <img src="Img/TverskyLossSweep.png" width="350" title="hover text">
+  <img src="Img/TverskyLossSweep.png" width="350" title="TverskyLossSweep">
 </p>
 
 Finally Dice loss and Tversky loss compare to find which loss is the best loss for the proposed model architecture, Tversky loss was the best one.
 
 <p align="center">
-  <img src="Img/BestDiceVsBestTversky.png" width="700" title="hover text">
+  <img src="Img/BestDiceVsBestTversky.png" width="700" title="BestDiceVsBestTversky">
 </p>
 
 <!--
