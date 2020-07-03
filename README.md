@@ -111,7 +111,7 @@ Summary:
     # The work focused on the effect of choosing the right loss function 
       with respect to high convergence and light-weight model
     # Several loss functions where used for segmentation tasks. 
-    # The best loss function choose such that converge faster and provide highly segmentation results
+    # The best loss function choose such converge faster and provide highly segmentation results
 
 **MRIDataCollection.py**
     
