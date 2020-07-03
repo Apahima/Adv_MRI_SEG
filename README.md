@@ -67,13 +67,12 @@ Summary:
 * Both Tversky and Dice loss combination ran with 50 epochs to understanding loss trends and save computational time
 * Scan with closed filled contours provide better result than open contours
 * Dice \ Tversky values are reasonable for first order training model
+* Tversky loss is more efficient for medical segmentation especially when the database is limited.
 
-![Results1](Img/Results1.png)
 
-![DifferentDiceResults](Img/DifferentDiceResults.png)
-![DifferentTverskyResults](Img/DifferentTverskyResults.png)
+![Results1](Img/ResultsPicturesGrid.png)
 
-`present the same pictures with Dice and Tversky and the image parameters such as SSIM....`
+![ResultsTableComperison](Img/ResultsTableComperison.png)
 
 ### Conclusions:
 
