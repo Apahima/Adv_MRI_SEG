@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torchvision
 import os
-import datetime
+from datetime import datetime
+from datetime import date
 import torch
 from Models.Unet.Loss import dice_loss
 from Models.Losses.DiceLoss.dice_loss import BinaryDiceLoss
@@ -52,11 +53,12 @@ def visualize(args, model, dataloaders,SegmentationLoss, writer):
         grid = torchvision.utils.make_grid(ScanLabelPred, nrow=3, pad_value=1)
         writer.add_image(tag, grid, index)
 
-    def save_image_as_file(image,tag,args):
+    def save_image_as_file(image,tag,args,writer):
         for i, image in enumerate(image):
             image = np.squeeze(image.cpu().numpy(), axis=0)
             timest = datetime.now().strftime("%I-%M-%S.%f")[:-3]
-            plt.imsave(os.path.join(args.exp_dir,'{}-{}-{}.png'.format(tag,i,timest)), image, cmap='gray')
+            path, _ = list(writer.all_writers.items())[0]
+            plt.imsave(os.path.join(path,'{}-{}-{}.png'.format(tag,i,timest)), image, cmap='gray')
 
     # def save_as_embbeded_seg(inputs,labels,pred):
     #     emb_label = inputs.detach().numpy()
@@ -78,12 +80,12 @@ def visualize(args, model, dataloaders,SegmentationLoss, writer):
         save_image_to_writer(labels, 'Ground Throuth Segmentation')
         save_image_to_writer(pred, 'Segmentation')
         save_image_to_writer(inputs, 'Original Scan')
-        print('Visualization DONE')
+
 
         if args.savetestfile == 'Y':
-            save_image_as_file(labels, 'Ground Throuth Segmentation', args)
-            save_image_as_file(pred, 'Segmentation', args)
-            save_image_as_file(inputs, 'Original Scan', args)
+            save_image_as_file(labels, 'Ground Throuth Segmentation', args,writer)
+            save_image_as_file(pred, 'Segmentation', args,writer)
+            save_image_as_file(inputs, 'Original Scan', args,writer)
             print('Save Images DONE')
 
         for Unified, _ in enumerate(inputs):
@@ -104,7 +106,7 @@ def visualize(args, model, dataloaders,SegmentationLoss, writer):
 
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
-
+    print('Visualization DONE')
 
 def WriteToTensorboard(metrics, epoch_samples,writer,epoch):
 
