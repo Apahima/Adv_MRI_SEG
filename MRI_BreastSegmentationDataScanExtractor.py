@@ -7,7 +7,16 @@ import cv2
 import logging
 
 def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath, PatientID, PatientDateScan,args):
+    """
+    The goal of that function is to extract he relevant scans for tumor detection
 
+    :param SegmentationDataPath:
+    :param SegmentationMaskDataPath:
+    :param PatientID:
+    :param PatientDateScan:
+    :param args:
+    :return:
+    """
     if not os.path.exists(os.path.join('Segmentation',SegmentationDataPath,'WOMorph')):
         os.makedirs(os.path.join('Segmentation',SegmentationDataPath,'WOMorph'))
     if not os.path.exists(os.path.join('Segmentation', SegmentationDataPath, 'WMorph')):
@@ -151,9 +160,15 @@ def MRI_SegentationDataExtractor(SegmentationDataPath, SegmentationMaskDataPath,
                 pyplot.imsave(os.path.join('Segmentation', SegmentationDataPath,'AT-CP',"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan,i)),
                           cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255, cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN,kernel), cmap='gray')
 
-                #Prepare the Dataset
-                pyplot.imsave(os.path.join(args.mask_path,"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan, i)),
-                              cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255,cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel),cmap='gray')
+                if args.scanpreprocess == True:
+                    #Prepare the Dataset
+                    pyplot.imsave(os.path.join(args.mask_path,"{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan, i)),
+                                  cv2.morphologyEx(cv2.threshold(ArrayDicom[i, :, :].astype('uint8'), ImageThreshold, 255,cv2.THRESH_BINARY)[1], cv2.MORPH_OPEN, kernel),cmap='gray')
+                else:
+                    #Prepare the Dataset with the original segmentation w\o pre-processing
+                    pyplot.imsave(
+                        os.path.join(args.mask_path, "{}-{}-{}-SegImage.png".format(PatientID, PatientDateScan, i)),
+                        ArrayDicom[i, :, :], cmap='gray')
     #
     print('Most significant scans are:', indices)
     # pyplot.figure(dpi=300)

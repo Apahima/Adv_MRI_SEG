@@ -25,6 +25,8 @@ class RawDataPreProcessing_Args(argparse.ArgumentParser):
                           help='Path to where save the coresponding images from Working Directory')
         self.add_argument('--mask-path', type=pathlib.Path, required=True,
                           help='Path to where save the coresponding masks from Working Directory')
+        self.add_argument('--scanpreprocess', type=bool, default=False,
+                          help='Flag if Preproces for IScan segmentation is needed')
 
 
         # Override defaults with passed overrides
