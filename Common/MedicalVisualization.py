@@ -101,9 +101,12 @@ def visualize(args, model, dataloaders,SegmentationLoss, writer):
             PSNR = EvalP.psnr(gt, prd)
             SSIM = EvalP.ssim(gt, prd)
 
-            writer.add_text('Img Parameters - Test Phase:', '{} loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
+            if args.loss == 'WBCE_DiceLoss':
+                writer.add_text('Img Parameters - Test Phase:', 'Dice loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
+                                           '  \nPSNR: {:.3}  \nSSIM: {:.3}'.format(loss,MSE,NMSE,PSNR,SSIM), Unified)
+            else:
+                writer.add_text('Img Parameters - Test Phase:', '{} loss calculation: {:.3}  \nMSE: {:.3}  \nNormalized MSE: {:.3}'
                                            '  \nPSNR: {:.3}  \nSSIM: {:.3}'.format(args.loss, loss,MSE,NMSE,PSNR,SSIM), Unified)
-
             # save_as_embbeded_seg(inputs[Unified,:],labels[Unified,:],pred[Unified,:])
 
     print('Visualization DONE')
