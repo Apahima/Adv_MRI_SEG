@@ -42,16 +42,12 @@ def MedicalDataLoading(path):
     print('X_data shape:', np.array(X_data).shape)
 
     Y_data = []
-
+    Scaling = 255 # Since the dynamic range for mask is 0-255 I wouldlike to rescale it to 0-1 to fit model output
 
     files = glob.glob(str(Path.joinpath(path , 'Mask')) + '/' + '*.png')
     for myFile in files:
         # print(myFile)
-        image = np.expand_dims(cv2.imread(myFile, cv2.IMREAD_GRAYSCALE), axis=0).astype('float32') #Grayscale loading but dim #1 save to be compatible with Unet loading
-        image = 1/(1 + np.exp(-image)) # Since the dynamic range for mask is 0-255 I wouldlike to rescale it to 0-1 to fit model output by sigmoid and dynamic range
-        image -= image.min()
-        image /= image.max()
-
+        image = np.expand_dims(cv2.imread(myFile, cv2.IMREAD_GRAYSCALE), axis=0).astype('float32') / Scaling #Grayscale loading but dim #1 save to be compatible with Unet loading
         if image.shape == (1,256,256):
             Y_data.append(image)
         elif image.shape == (1,512,512):
